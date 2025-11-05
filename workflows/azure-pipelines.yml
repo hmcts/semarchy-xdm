@@ -1,0 +1,94 @@
+name: vault-vm-pipeline
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+resources:
+  repositories:
+    - repository: cppAzureDevOpsTemplates
+      type: github
+      name: hmcts/cpp-azure-devops-templates
+      ref: "main"
+      endpoint: "hmcts"
+
+parameters:
+  - name: tfversion
+    default: 1.12.1
+  - name: agentPool
+    values:
+      - "MDV-ADO-AGENTS-01"
+      - "MPD-ADO-AGENTS-01"
+    default: "MDV-ADO-AGENTS-01"
+  - name: platform
+    values:
+      - "nonlive"
+      - "live"
+    default: "nonlive"
+  - name: environment
+    default: "mdv"
+    values:
+      - "mdv"
+      - "mpd"
+  - name: targetResources
+    default: null
+  - name: component
+    values:
+      - "vms-lb-kv"
+      - "vault"
+      - "network"
+    default: "vms-lb-kv"
+
+variables:
+  - template: ../azure-pipeline-variables/${{ parameters.platform }}.yml
+
+stages:
+  - stage: precommit
+    pool:
+      name: ${{ parameters.agentPool }}
+    jobs:
+      - job: pre
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - template: steps/terraform/terraform-precommit.yaml@cppAzureDevOpsTemplates
+            parameters:
+              tfversion: ${{ parameters.tfversion }}
+
+  - ${{ if and(eq(parameters.component, 'vms-lb-kv'), eq(variables['Build.Reason'], 'Manual')) }}:
+      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
+        parameters:
+          tfversion: ${{ parameters.tfversion }}
+          azureServiceConnection: ${{ variables.azureServiceConnection }}
+          vaultAdminCredentialsVarGroup: ${{ variables.vaultAdminCredentialsVarGroup }}
+          platform: ${{ parameters.platform }}
+          environment: ${{ parameters.environment }}
+          agentPool: ${{ parameters.agentPool }}
+          targetResources: ${{ parameters.targetResources }}
+
+  - ${{ if and(eq(parameters.component, 'vault'), eq(variables['Build.Reason'], 'Manual')) }}:
+      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
+        parameters:
+          tfversion: ${{ parameters.tfversion }}
+          azureServiceConnection: ${{ variables.azureServiceConnection }}
+          vaultAdminCredentialsVarGroup: ${{ variables.vaultAdminCredentialsVarGroup }}
+          platform: ${{ parameters.platform }}
+          environment: ${{ parameters.environment }}
+          agentPool: ${{ parameters.agentPool }}
+          targetResources: ${{ parameters.targetResources }}
+          dir: vault
+          terraformWorkspaceName: ${{ parameters.platform }}-vault
+          tfvars: ../vars/${{ parameters.environment }}.tfvars
+
+  - ${{ if and(eq(parameters.component, 'network'), eq(variables['Build.Reason'], 'Manual')) }}:
+      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
+        parameters:
+          tfversion: ${{ parameters.tfversion }}
+          azureServiceConnection: ${{ variables.azureServiceConnection }}
+          platform: ${{ parameters.platform }}
+          environment: ${{ parameters.environment }}
+          agentPool: ${{ parameters.agentPool }}
+          targetResources: ${{ parameters.targetResources }}
+          dir: network
+          terraformWorkspaceName: ${{ parameters.platform }}-network
+          tfvars: ../vars/${{ parameters.environment }}.tfvars
