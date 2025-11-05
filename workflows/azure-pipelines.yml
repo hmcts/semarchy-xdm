@@ -44,16 +44,25 @@ variables:
   - template: ../azure-pipeline-variables/${{ parameters.platform }}.yml
 
 stages:
-  - stage: precommit
+  - stage: validate
+    displayName: "Validate Terraform Configuration"
     pool:
       name: ${{ parameters.agentPool }}
+    condition: eq(variables['Build.Reason'], 'PullRequest') # Only run for pull requests
     jobs:
-      - job: pre
-        condition: eq(variables['Build.Reason'], 'PullRequest')
+      - job: terraform-validate
+        displayName: "Terraform Init and Plan"
         steps:
-          - template: steps/terraform/terraform-precommit.yaml@cppAzureDevOpsTemplates
+          - template: steps/terraform/terraform-init.yaml@cppAzureDevOpsTemplates
             parameters:
               tfversion: ${{ parameters.tfversion }}
+          - template: steps/terraform/terraform-plan.yaml@cppAzureDevOpsTemplates
+            parameters:
+              tfversion: ${{ parameters.tfversion }}
+              azureServiceConnection: ${{ variables.azureServiceConnection }}
+              platform: ${{ parameters.platform }}
+              environment: ${{ parameters.environment }}
+              targetResources: ${{ parameters.targetResources }}
 
   - ${{ if and(eq(parameters.component, 'vms-lb-kv'), eq(variables['Build.Reason'], 'Manual')) }}:
       - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
