@@ -34,32 +34,11 @@ parameters:
   - name: environment_components
     type: object
     default:
-      - deployment: "cft_sbox_core"
+      - deployment: "cft_sbox_all"
         environment: "cft-sbox"
-        component: "core"
+        component: "all"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
-      - deployment: "cft_sbox_backend_database"
-        environment: "cft-sbox"
-        component: "database"
-        service_connection: "DCD-CFTAPPS-SBOX"
-        dependsOn: "cft_sbox_core"
-      - deployment: "cft_sbox_vm"
-        environment: "cft-sbox"
-        component: "vm"
-        service_connection: "DCD-CFTAPPS-SBOX"
-        dependsOn: "cft_sbox_core"
-      - deployment: "cft_sbox_appgw"
-        environment: "cft-sbox"
-        component: "app-gateway"
-        service_connection: "DCD-CFTAPPS-SBOX"
-        dependsOn:
-          - "cft_sbox_vm"
-      - deployment: "cft_sbox_rbac"
-        environment: "cft-sbox"
-        component: "rbac"
-        service_connection: "DCD-CFTAPPS-SBOX"
-        dependsOn: "cft_sbox_vm"
 
 variables:
   - name: timeoutInMinutes
@@ -86,17 +65,16 @@ stages:
               serviceConnection: "DCD-CFTAPPS-SBOX"
               overrideAction: ${{ parameters.overrideAction }}
 
-  - ${{ each deployment in parameters.environment_components }}:
-      - stage: ${{ deployment.deployment }}
-        dependsOn: ${{ deployment.dependsOn }}
-        jobs:
-          - job: TerraformPlanApply
-            pool: hmcts-sds-ptl
-            timeoutInMinutes: ${{ variables.timeoutInMinutes }}
-            steps:
-              - template: steps/terraform.yaml@cnp-azuredevops-libraries
-                parameters:
-                  overrideAction: ${{ parameters.overrideAction }}
-                  environment: ${{ deployment.environment }}
-                  component: ${{ deployment.component }}
-                  serviceConnection: ${{ deployment.service_connection }}
+  - stage: cft_sbox_all
+    dependsOn: Precheck
+    jobs:
+      - job: TerraformPlanApply
+        pool: hmcts-sds-ptl
+        timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+        steps:
+          - template: steps/terraform.yaml@cnp-azuredevops-libraries
+            parameters:
+              overrideAction: ${{ parameters.overrideAction }}
+              environment: "cft-sbox"
+              component: "all"
+              serviceConnection: "DCD-CFTAPPS-SBOX"
