@@ -1,103 +1,102 @@
-name: vault-vm-pipeline
 trigger:
   batch: true
   branches:
     include:
       - main
 
+pr:
+  - main
+
+schedules:
+  - cron: "0 18 * * 1-5"
+    displayName: Daily 6pm build
+    branches:
+      include:
+        - main
+    always: "true"
+
 resources:
   repositories:
-    - repository: cppAzureDevOpsTemplates
+    - repository: cnp-azuredevops-libraries
       type: github
-      name: hmcts/cpp-azure-devops-templates
-      ref: "main"
+      ref: refs/heads/master
+      name: hmcts/cnp-azuredevops-libraries
       endpoint: "hmcts"
 
 parameters:
-  - name: tfversion
-    default: 1.12.1
-  - name: agentPool
+  - name: overrideAction
+    type: string
+    default: plan
     values:
-      - "MDV-ADO-AGENTS-01"
-      - "MPD-ADO-AGENTS-01"
-    default: "MDV-ADO-AGENTS-01"
-  - name: platform
-    values:
-      - "nonlive"
-      - "live"
-    default: "nonlive"
-  - name: environment
-    default: "mdv"
-    values:
-      - "mdv"
-      - "mpd"
-  - name: targetResources
-    default: null
-  - name: component
-    values:
-      - "vms-lb-kv"
-      - "vault"
-      - "network"
-    default: "vms-lb-kv"
+      - plan
+      - apply
+      - destroy
+  - name: environment_components
+    type: object
+    default:
+      - deployment: "cft_sbox_core"
+        environment: "cft-sbox"
+        component: "core"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "Precheck"
+      - deployment: "cft_sbox_backend_database"
+        environment: "cft-sbox"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "cft_sbox_core"
+      - deployment: "cft_sbox_vm"
+        environment: "cft-sbox"
+        component: "vm"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "cft_sbox_core"
+      - deployment: "cft_sbox_appgw"
+        environment: "cft-sbox"
+        component: "app-gateway"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn:
+          - "cft_sbox_vm"
+      - deployment: "cft_sbox_rbac"
+        environment: "cft-sbox"
+        component: "rbac"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "cft_sbox_vm"
 
 variables:
-  - template: ../azure-pipeline-variables/${{ parameters.platform }}.yml
+  - name: timeoutInMinutes
+    value: 60
+  - name: agentImage
+    value: ubuntu-latest
+  - name: product
+    value: cft-sbox
+  - name: terraformInitSubscription
+    value: 04d27a32-7a07-48b3-95b8-3c8691e1a263
+  - template: vars/input-variables.yaml@cnp-azuredevops-libraries
 
 stages:
-  - stage: validate
-    displayName: "Validate Terraform Configuration"
-    pool:
-      name: ${{ parameters.agentPool }}
-    condition: eq(variables['Build.Reason'], 'PullRequest') # Only run for pull requests
+  - stage: Precheck
     jobs:
-      - job: terraform-validate
-        displayName: "Terraform Init and Plan"
+      - job:
+        pool:
+          vmImage: ${{ variables.agentImage }}
         steps:
-          - template: steps/terraform/terraform-init.yaml@cppAzureDevOpsTemplates
+          - template: steps/terraform-precheck.yaml@cnp-azuredevops-libraries
             parameters:
-              tfversion: ${{ parameters.tfversion }}
-          - template: steps/terraform/terraform-plan.yaml@cppAzureDevOpsTemplates
-            parameters:
-              tfversion: ${{ parameters.tfversion }}
-              azureServiceConnection: ${{ variables.azureServiceConnection }}
-              platform: ${{ parameters.platform }}
-              environment: ${{ parameters.environment }}
-              targetResources: ${{ parameters.targetResources }}
+              keyvaultName: "infra-vault-cft-sbox"
+              keyvaultSecret: "azure-devops-sp-token"
+              serviceConnection: "DCD-CFTAPPS-SBOX"
+              overrideAction: ${{ parameters.overrideAction }}
 
-  - ${{ if and(eq(parameters.component, 'vms-lb-kv'), eq(variables['Build.Reason'], 'Manual')) }}:
-      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
-        parameters:
-          tfversion: ${{ parameters.tfversion }}
-          azureServiceConnection: ${{ variables.azureServiceConnection }}
-          vaultAdminCredentialsVarGroup: ${{ variables.vaultAdminCredentialsVarGroup }}
-          platform: ${{ parameters.platform }}
-          environment: ${{ parameters.environment }}
-          agentPool: ${{ parameters.agentPool }}
-          targetResources: ${{ parameters.targetResources }}
-
-  - ${{ if and(eq(parameters.component, 'vault'), eq(variables['Build.Reason'], 'Manual')) }}:
-      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
-        parameters:
-          tfversion: ${{ parameters.tfversion }}
-          azureServiceConnection: ${{ variables.azureServiceConnection }}
-          vaultAdminCredentialsVarGroup: ${{ variables.vaultAdminCredentialsVarGroup }}
-          platform: ${{ parameters.platform }}
-          environment: ${{ parameters.environment }}
-          agentPool: ${{ parameters.agentPool }}
-          targetResources: ${{ parameters.targetResources }}
-          dir: vault
-          terraformWorkspaceName: ${{ parameters.platform }}-vault
-          tfvars: ../vars/${{ parameters.environment }}.tfvars
-
-  - ${{ if and(eq(parameters.component, 'network'), eq(variables['Build.Reason'], 'Manual')) }}:
-      - template: pipelines/terraform-ws-plan-and-apply.yaml@cppAzureDevOpsTemplates
-        parameters:
-          tfversion: ${{ parameters.tfversion }}
-          azureServiceConnection: ${{ variables.azureServiceConnection }}
-          platform: ${{ parameters.platform }}
-          environment: ${{ parameters.environment }}
-          agentPool: ${{ parameters.agentPool }}
-          targetResources: ${{ parameters.targetResources }}
-          dir: network
-          terraformWorkspaceName: ${{ parameters.platform }}-network
-          tfvars: ../vars/${{ parameters.environment }}.tfvars
+  - ${{ each deployment in parameters.environment_components }}:
+      - stage: ${{ deployment.deployment }}
+        dependsOn: ${{ deployment.dependsOn }}
+        jobs:
+          - job: TerraformPlanApply
+            pool: hmcts-sds-ptl
+            timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+            steps:
+              - template: steps/terraform.yaml@cnp-azuredevops-libraries
+                parameters:
+                  overrideAction: ${{ parameters.overrideAction }}
+                  environment: ${{ deployment.environment }}
+                  component: ${{ deployment.component }}
+                  serviceConnection: ${{ deployment.service_connection }}
