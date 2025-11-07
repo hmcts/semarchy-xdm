@@ -1,8 +1,3 @@
-output "key_vault_name" {
-  description = "The name of the created Key Vault"
-  value       = azurerm_key_vault.example.name
-}
-
 output "vnet_name" {
   description = "The name of the created Virtual Network"
   value       = azurerm_virtual_network.example.name
