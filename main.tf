@@ -35,6 +35,10 @@ module "postgresql_flexible_subnet" {
   virtual_network_id  = azurerm_virtual_network.example.id
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
+
+  providers = {
+    azurerm = azurerm.postgres_network
+  }
 }
 
 resource "azurerm_subnet" "general_purpose" {
