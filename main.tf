@@ -37,7 +37,7 @@ module "postgresql_flexible_subnet" {
   location            = azurerm_resource_group.example.location
 
   providers = {
-    azurerm = azurerm.postgres_network
+    azurerm.postgres_network = azurerm
   }
 }
 

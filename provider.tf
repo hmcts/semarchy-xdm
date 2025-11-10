@@ -10,9 +10,3 @@ terraform {
 provider "azurerm" {
   features {}
 }
-
-provider "azurerm" {
-  alias = "postgres_network"
-  features {}
-  subscription_id = var.postgresql_subscription_id
-}
