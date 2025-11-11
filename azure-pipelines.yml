@@ -36,7 +36,7 @@ parameters:
     default:
       - deployment: "cft_sbox_all"
         environment: "cft-sbox"
-        component: "all"
+        component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
 
@@ -76,5 +76,5 @@ stages:
             parameters:
               overrideAction: ${{ parameters.overrideAction }}
               environment: "cft-sbox"
-              component: "all"
+              component: "core"
               serviceConnection: "DCD-CFTAPPS-SBOX"
