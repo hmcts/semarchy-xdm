@@ -60,10 +60,10 @@ resource "azurerm_subnet" "general_purpose" {
 }
 
 module "network_security_group" {
-  source              = "github.com/hmcts/terraform-module-network-security-group"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  nsg_name            = var.nsg_name
+  source                      = "github.com/hmcts/terraform-module-network-security-group"
+  resource_group_name         = azurerm_resource_group.example.name
+  location                    = azurerm_resource_group.example.location
+  network_security_group_name = var.nsg_name
 
   subnet_ids = [
     module.container_apps_subnet.subnet_id,
