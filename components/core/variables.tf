@@ -122,3 +122,18 @@ variable "subnets" {
   }))
 
 }
+
+variable "env" {
+  description = "The environment (e.g., dev, test, prod)"
+  type        = string
+}
+
+variable "product" {
+  description = "The product or application name"
+  type        = string
+}
+
+variable "common_tags" {
+  description = "Common tags to apply to resources"
+  type        = map(string)
+}
