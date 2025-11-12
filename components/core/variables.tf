@@ -40,17 +40,17 @@ variable "vnet_address_space" {
   default     = ["10.0.0.0/16"]
 }
 
-variable "container_apps_subnet_name" {
-  description = "The name of the subnet for Container Apps"
-  type        = string
-  default     = "container-apps-subnet"
-}
+# variable "container_apps_subnet_name" {
+#   description = "The name of the subnet for Container Apps"
+#   type        = string
+#   default     = "container-apps-subnet"
+# }
 
-variable "container_apps_subnet_address" {
-  description = "The address prefix for the Container Apps subnet"
-  type        = string
-  default     = "10.0.1.0/27"
-}
+# variable "container_apps_subnet_address" {
+#   description = "The address prefix for the Container Apps subnet"
+#   type        = string
+#   default     = "10.0.1.0/27"
+# }
 
 variable "postgresql_subnet_name" {
   description = "The name of the subnet for PostgreSQL Flexible Servers"
@@ -91,4 +91,34 @@ variable "route_table_name" {
   description = "The name of the Route Table"
   type        = string
   default     = "example-route-table"
+}
+
+variable "vnets" {
+  description = "Map of virtual networks"
+  type = map(object({
+    existing      = bool
+    name_override = string
+    address_space = list(string)
+  }))
+}
+
+variable "subnets" {
+  description = "List of subnets to create"
+  type = list(object({
+    vnet_key   = string
+    subnet_key = string
+    subnet = object({
+      name_override     = string
+      address_prefixes  = list(string)
+      service_endpoints = list(string)
+      delegations = map(object({
+        service_name = string
+        actions      = list(string)
+      }))
+    })
+    vnet = object({
+      existing = bool
+    })
+  }))
+
 }

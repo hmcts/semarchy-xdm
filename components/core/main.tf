@@ -19,13 +19,21 @@ resource "azurerm_virtual_network" "example" {
   address_space       = var.vnet_address_space
 }
 
-module "container_apps_subnet" {
-  source              = "github.com/hmcts/terraform-module-azure-container-app"
-  subnet_name         = var.container_apps_subnet_name
-  subnet_address      = var.container_apps_subnet_address
-  virtual_network_id  = azurerm_virtual_network.example.id
+# module "container_apps_subnet" {
+#   source              = "github.com/hmcts/terraform-module-azure-container-app"
+#   subnet_name         = var.container_apps_subnet_name
+#   subnet_address      = var.container_apps_subnet_address
+#   virtual_network_id  = azurerm_virtual_network.example.id
+#   resource_group_name = azurerm_resource_group.example.name
+#   location            = azurerm_resource_group.example.location
+# }
+
+module "networking" {
+  source              = "github.com/hmcts/terraform-module-azure-virtual-networking"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
+  vnets               = var.vnets
+  subnets             = var.subnets
 }
 
 module "postgresql_flexible_subnet" {
