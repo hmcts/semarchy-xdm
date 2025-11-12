@@ -32,11 +32,35 @@ resource "azurerm_virtual_network" "example" {
 # }
 
 module "networking" {
-  source              = "github.com/hmcts/terraform-module-azure-virtual-networking"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  vnets               = var.vnets
-  subnets             = var.subnets
+  source                       = "github.com/hmcts/terraform-module-azure-virtual-networking"
+  existing_resource_group_name = azurerm_resource_group.example.name
+  location                     = azurerm_resource_group.example.location
+  common_tags                  = var.common_tags
+  product                      = var.product
+  env                          = var.env
+  component                    = "networking"
+
+  vnets = {
+    example-vnet = {
+      existing      = false
+      name_override = null
+      address_space = var.vnet_address_space
+      subnets = [
+        {
+          subnet_key        = "container-apps"
+          name_override     = null
+          address_prefixes  = ["10.0.1.0/27"]
+          service_endpoints = ["Microsoft.Web"]
+          delegations = {
+            "Microsoft.ContainerApp" = {
+              service_name = "Microsoft.ContainerApp"
+              actions      = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+            }
+          }
+        }
+      ]
+    }
+  }
 }
 
 module "postgresql_flexible_subnet" {
@@ -66,7 +90,7 @@ module "network_security_group" {
   network_security_group_name = var.nsg_name
 
   subnet_ids = [
-    module.container_apps_subnet.subnet_id,
+    module.networking.vnets["example-vnet"].subnets["container-apps"].id,
     module.postgresql_flexible_subnet.subnet_id,
     azurerm_subnet.general_purpose.id
   ]
@@ -79,7 +103,7 @@ module "route_table" {
   route_table_name    = var.route_table_name
 
   subnet_ids = [
-    module.container_apps_subnet.subnet_id,
+    module.networking.vnets["example-vnet"].subnets["container-apps"].id,
     module.postgresql_flexible_subnet.subnet_id,
     azurerm_subnet.general_purpose.id
   ]
