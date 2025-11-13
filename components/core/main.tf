@@ -86,9 +86,6 @@ module "postgresql_flexible_subnet" {
 
   pgsql_version = "16"
 
-  subnet_name         = var.postgresql_subnet_name
-  subnet_address      = var.postgresql_subnet_address
-  virtual_network_id  = module.networking.vnets["example-vnet"].id
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 
