@@ -115,7 +115,7 @@ module "network_security_group" {
 }
 
 module "route_table" {
-  source              = "Azure/routetable/azurerm"
+  source              = "github.com/hmcts/cpp-module-terraform-azurerm-routetable"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
   route_table_name    = var.route_table_name
