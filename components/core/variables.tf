@@ -137,3 +137,7 @@ variable "common_tags" {
   description = "Common tags to apply to resources"
   type        = map(string)
 }
+
+variable "tags" {
+  type = map(string)
+}
