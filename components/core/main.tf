@@ -115,16 +115,28 @@ module "network_security_group" {
 }
 
 module "route_table" {
-  source              = "github.com/hmcts/cpp-module-terraform-azurerm-routetable"
+  source              = "Azure/routetable/azurerm"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
   route_table_name    = var.route_table_name
 
+  # Define the routes for the Route Table
+  route_prefixes      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  route_nexthop_types = ["VnetLocal", "VnetLocal", "VnetLocal"]
+  route_names         = ["route1", "route2", "route3"]
+
+  # Associate the Route Table with all three subnets
   subnet_ids = [
     module.networking.vnets["example-vnet"].subnets["container-apps"].id,
     module.postgresql_flexible_subnet.subnet_id,
     azurerm_subnet.general_purpose.id
   ]
+
+  # Add tags for the Route Table
+  tags = {
+    environment = var.env
+    product     = var.product
+  }
 }
 
 data "azurerm_client_config" "current" {}
