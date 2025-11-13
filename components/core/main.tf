@@ -64,10 +64,31 @@ module "networking" {
 }
 
 module "postgresql_flexible_subnet" {
-  source              = "github.com/hmcts/terraform-module-postgresql-flexible"
+  source        = "github.com/hmcts/terraform-module-postgresql-flexible"
+  env           = var.env
+  product       = var.product
+  component     = "postgresql"
+  business_area = "example-business-area"
+  subnet_suffix = "postgresql"
+
+  enable_read_only_group_access = false
+  enable_db_report_privileges   = true
+
+  common_tags = var.common_tags
+
+  pgsql_databases = [
+    {
+      name                    = "application"
+      report_privilege_schema = "public"
+      report_privilege_tables = ["table1", "table2"]
+    }
+  ]
+
+  pgsql_version = "16"
+
   subnet_name         = var.postgresql_subnet_name
   subnet_address      = var.postgresql_subnet_address
-  virtual_network_id  = azurerm_virtual_network.example.id
+  virtual_network_id  = module.networking.vnets["example-vnet"].id
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
 

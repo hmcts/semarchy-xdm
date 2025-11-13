@@ -38,3 +38,6 @@ common_tags = {
   environment = "sboc"
   project     = "sbox-project"
 }
+
+postgresql_subnet_name    = "postgresql-subnet"
+postgresql_subnet_address = "10.0.2.0/27"
