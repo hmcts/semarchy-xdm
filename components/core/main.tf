@@ -133,10 +133,7 @@ module "route_table" {
   ]
 
   # Add tags for the Route Table
-  tags = {
-    environment = var.env
-    product     = var.product
-  }
+  tags = var.common_tags
 }
 
 data "azurerm_client_config" "current" {}
