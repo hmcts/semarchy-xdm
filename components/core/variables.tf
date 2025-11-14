@@ -16,11 +16,11 @@ variable "key_vault_name" {
   default     = "example-keyvault"
 }
 
-variable "key_vault_sku" {
-  description = "The SKU of the Key Vault"
-  type        = string
-  default     = "standard"
-}
+# variable "key_vault_sku" {
+#   description = "The SKU of the Key Vault"
+#   type        = string
+#   default     = "standard"
+# }
 
 # variable "key_vault_admin_object_ids" {
 #   description = "The Object IDs of the Key Vault administrators"
@@ -64,10 +64,10 @@ variable "postgresql_subnet_address" {
   default     = "10.0.2.0/27"
 }
 
-variable "postgresql_subscription_id" {
-  description = "The subscription ID for the PostgreSQL resources"
-  type        = string
-}
+# variable "postgresql_subscription_id" {
+#   description = "The subscription ID for the PostgreSQL resources"
+#   type        = string
+# }
 
 variable "general_purpose_subnet_name" {
   description = "The name of the general purpose subnet"
@@ -108,6 +108,3 @@ variable "common_tags" {
   type        = map(string)
 }
 
-variable "tags" {
-  type = map(string)
-}
