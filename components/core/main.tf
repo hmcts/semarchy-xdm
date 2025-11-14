@@ -65,11 +65,11 @@ module "network_security_group" {
   location                    = azurerm_resource_group.core.location
   network_security_group_name = var.nsg_name
 
-  subnet_ids = [
-    azurerm_subnet.container_apps_subnet.id,
-    azurerm_subnet.postgresql_flexible_subnet.id,
-    azurerm_subnet.general_purpose.id
-  ]
+  subnet_ids = {
+    container_apps = azurerm_subnet.container_apps_subnet.id,
+    postgresql     = azurerm_subnet.postgresql_flexible_subnet.id,
+    general        = azurerm_subnet.general_purpose.id
+  }
 }
 
 module "route_table" {
@@ -89,17 +89,17 @@ module "route_table" {
 
 resource "azurerm_subnet_route_table_association" "container_apps" {
   subnet_id      = azurerm_subnet.container_apps_subnet.id
-  route_table_id = module.route_table.route_table_id
+  route_table_id = module.route_table.id
 }
 
 resource "azurerm_subnet_route_table_association" "postgresql_flexible" {
   subnet_id      = azurerm_subnet.postgresql_flexible_subnet.id
-  route_table_id = module.route_table.route_table_id
+  route_table_id = module.route_table.id
 }
 
 resource "azurerm_subnet_route_table_association" "general_purpose" {
   subnet_id      = azurerm_subnet.general_purpose.id
-  route_table_id = module.route_table.route_table_id
+  route_table_id = module.route_table.id
 }
 
 data "azurerm_client_config" "current" {}

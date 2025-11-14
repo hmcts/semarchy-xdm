@@ -1,11 +1,11 @@
 output "vnet_name" {
   description = "The name of the created Virtual Network"
-  value       = azurerm_virtual_network.example.name
+  value       = azurerm_virtual_network.core.name
 }
 
 output "vnet_address_space" {
   description = "The address space of the created Virtual Network"
-  value       = azurerm_virtual_network.example.address_space
+  value       = azurerm_virtual_network.core.address_space
 }
 
 output "container_apps_subnet_name" {
@@ -55,7 +55,7 @@ output "route_table_name" {
 
 output "route_table_id" {
   description = "The ID of the Route Table"
-  value       = module.route_table.route_table_id
+  value       = module.route_table.id # Changed from .route_table_id
 }
 
 output "key_vault_name" {
