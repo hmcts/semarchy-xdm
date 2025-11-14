@@ -72,34 +72,44 @@ module "network_security_group" {
   }
 }
 
-module "route_table" {
-  source              = "github.com/hmcts/cpp-module-terraform-azurerm-routetable"
-  resource_group_name = azurerm_resource_group.core.name
+resource "azurerm_route_table" "core" {
+  name                = var.route_table_name
   location            = azurerm_resource_group.core.location
-  route_table_name    = var.route_table_name
+  resource_group_name = azurerm_resource_group.core.name
+  tags                = var.common_tags
 
-  # Define the routes for the Route Table
-  route_prefixes      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  route_nexthop_types = ["VnetLocal", "VnetLocal", "VnetLocal"]
-  route_names         = ["route1", "route2", "route3"]
+  route {
+    name           = "route1"
+    address_prefix = "10.0.1.0/24"
+    next_hop_type  = "VnetLocal"
+  }
 
-  # Add tags for the Route Table
-  tags = var.common_tags
+  route {
+    name           = "route2"
+    address_prefix = "10.0.2.0/24"
+    next_hop_type  = "VnetLocal"
+  }
+
+  route {
+    name           = "route3"
+    address_prefix = "10.0.3.0/24"
+    next_hop_type  = "VnetLocal"
+  }
 }
 
 resource "azurerm_subnet_route_table_association" "container_apps" {
   subnet_id      = azurerm_subnet.container_apps_subnet.id
-  route_table_id = module.route_table.id
+  route_table_id = azurerm_route_table.core.id
 }
 
 resource "azurerm_subnet_route_table_association" "postgresql_flexible" {
   subnet_id      = azurerm_subnet.postgresql_flexible_subnet.id
-  route_table_id = module.route_table.id
+  route_table_id = azurerm_route_table.core.id
 }
 
 resource "azurerm_subnet_route_table_association" "general_purpose" {
   subnet_id      = azurerm_subnet.general_purpose.id
-  route_table_id = module.route_table.id
+  route_table_id = azurerm_route_table.core.id
 }
 
 data "azurerm_client_config" "current" {}

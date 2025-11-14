@@ -55,7 +55,7 @@ output "route_table_name" {
 
 output "route_table_id" {
   description = "The ID of the Route Table"
-  value       = module.route_table.id # Changed from .route_table_id
+  value       = azurerm_route_table.core.id # Changed from module reference
 }
 
 output "key_vault_name" {
