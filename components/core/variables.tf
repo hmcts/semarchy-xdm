@@ -22,11 +22,11 @@ variable "key_vault_sku" {
   default     = "standard"
 }
 
-variable "key_vault_admin_object_ids" {
-  description = "The Object IDs of the Key Vault administrators"
-  type        = list(string)
-  default     = []
-}
+# variable "key_vault_admin_object_ids" {
+#   description = "The Object IDs of the Key Vault administrators"
+#   type        = list(string)
+#   default     = []
+# }
 
 variable "vnet_name" {
   description = "The name of the Virtual Network"
