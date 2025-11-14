@@ -1,5 +1,5 @@
 # key_vault_admin_object_ids = ["<actual-object-id>"]
-env     = "cft-sbox"
+env     = "sbox"
 product = "semarchy-xdm"
 common_tags = {
   environment = "sbox"
