@@ -67,3 +67,19 @@ output "key_vault_id" {
   description = "The ID of the created Key Vault"
   value       = module.key_vault.key_vault_id
 }
+
+output "container_apps_subnet_id" {
+  description = "The ID of the Container Apps subnet"
+  value       = azurerm_subnet.container_apps_subnet.id
+}
+
+output "postgresql_flexible_subnet_id" {
+  description = "The ID of the PostgreSQL Flexible Servers subnet"
+  value       = azurerm_subnet.postgresql_flexible_subnet.id
+}
+
+output "general_purpose_subnet_id" {
+  description = "The ID of the general-purpose subnet"
+  value       = azurerm_subnet.general_purpose.id
+}
+

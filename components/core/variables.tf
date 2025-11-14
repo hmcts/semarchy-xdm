@@ -93,36 +93,6 @@ variable "route_table_name" {
   default     = "example-route-table"
 }
 
-variable "vnets" {
-  description = "Map of virtual networks"
-  type = map(object({
-    existing      = bool
-    name_override = string
-    address_space = list(string)
-  }))
-}
-
-variable "subnets" {
-  description = "List of subnets to create"
-  type = list(object({
-    vnet_key   = string
-    subnet_key = string
-    subnet = object({
-      name_override     = string
-      address_prefixes  = list(string)
-      service_endpoints = list(string)
-      delegations = map(object({
-        service_name = string
-        actions      = list(string)
-      }))
-    })
-    vnet = object({
-      existing = bool
-    })
-  }))
-
-}
-
 variable "env" {
   description = "The environment (e.g., dev, test, prod)"
   type        = string
