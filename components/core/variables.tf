@@ -108,3 +108,7 @@ variable "common_tags" {
   type        = map(string)
 }
 
+variable "builtFrom" {
+  type    = string
+  default = "hmcts/semarchy-xdm"
+}
