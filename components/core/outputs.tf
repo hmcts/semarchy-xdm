@@ -43,10 +43,6 @@ output "nsg_name" {
   value       = var.nsg_name
 }
 
-output "nsg_id" {
-  description = "The ID of the Network Security Group"
-  value       = module.network_security_group.nsg_id
-}
 
 output "route_table_name" {
   description = "The name of the Route Table"
