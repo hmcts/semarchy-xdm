@@ -22,82 +22,40 @@ resource "azurerm_virtual_network" "example" {
   address_space       = var.vnet_address_space
 }
 
-# module "container_apps_subnet" {
-#   source              = "github.com/hmcts/terraform-module-azure-container-app"
-#   subnet_name         = var.container_apps_subnet_name
-#   subnet_address      = var.container_apps_subnet_address
-#   virtual_network_id  = azurerm_virtual_network.example.id
-#   resource_group_name = azurerm_resource_group.example.name
-#   location            = azurerm_resource_group.example.location
-# }
+resource "azurerm_subnet" "container_apps_subnet" {
+  name                 = var.container_apps_subnet_name
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = [var.container_apps_subnet_address]
 
-module "networking" {
-  source                       = "github.com/hmcts/terraform-module-azure-virtual-networking"
-  existing_resource_group_name = azurerm_resource_group.example.name
-  location                     = azurerm_resource_group.example.location
-  common_tags                  = var.common_tags
-  product                      = var.product
-  env                          = var.env
-  component                    = "networking"
-
-  vnets = {
-    example-vnet = {
-      existing      = false
-      name_override = null
-      address_space = var.vnet_address_space
-      subnets = [
-        {
-          subnet_key        = "container-apps"
-          name_override     = null
-          address_prefixes  = ["10.0.1.0/27"]
-          service_endpoints = ["Microsoft.Web"]
-          delegations = {
-            "Microsoft.ContainerApp" = {
-              service_name = "Microsoft.ContainerApp"
-              actions      = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
-            }
-          }
-        }
-      ]
+  delegation {
+    name = "MicrosoftContainerAppDelegation"
+    service_delegation {
+      name    = "Microsoft.App/environments"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
     }
   }
 }
 
-module "postgresql_flexible_subnet" {
-  source        = "github.com/hmcts/terraform-module-postgresql-flexible"
-  env           = var.env
-  product       = var.product
-  component     = "postgresql"
-  business_area = "example-business-area"
-  subnet_suffix = "postgresql"
+resource "azurerm_subnet" "postgresql_flexible_subnet" {
+  name                 = var.postgresql_subnet_name
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
+  address_prefixes     = [var.postgresql_subnet_address]
 
-  enable_read_only_group_access = false
-  enable_db_report_privileges   = true
-
-  common_tags = var.common_tags
-
-  pgsql_databases = [
-    {
-      name                    = "application"
-      report_privilege_schema = "public"
-      report_privilege_tables = ["table1", "table2"]
+  delegation {
+    name = "MicrosoftPostgreSQLDelegation"
+    service_delegation {
+      name    = "Microsoft.DBforPostgreSQL/flexibleServers"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
     }
-  ]
-
-  pgsql_version = "16"
-
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-
-  providers = {
-    azurerm.postgres_network = azurerm
   }
 }
 
 resource "azurerm_subnet" "general_purpose" {
   name                 = var.general_purpose_subnet_name
-  resource_group_name  = azurerm_resource_group.example
-  virtual_network_name = azurerm_virtual_network.example
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = [var.general_purpose_subnet_address]
 }
 
@@ -108,8 +66,8 @@ module "network_security_group" {
   network_security_group_name = var.nsg_name
 
   subnet_ids = [
-    module.networking.vnets["example-vnet"].subnets["container-apps"].id,
-    module.postgresql_flexible_subnet.subnet_id,
+    azurerm_subnet.container_apps_subnet.id,
+    azurerm_subnet.postgresql_flexible_subnet.id,
     azurerm_subnet.general_purpose.id
   ]
 }
@@ -127,8 +85,8 @@ module "route_table" {
 
   # Associate the Route Table with all three subnets
   subnet_ids = [
-    module.networking.vnets["example-vnet"].subnets["container-apps"].id,
-    module.postgresql_flexible_subnet.subnet_id,
+    azurerm_subnet.container_apps_subnet.id,
+    azurerm_subnet.postgresql_flexible_subnet.id,
     azurerm_subnet.general_purpose.id
   ]
 

@@ -40,17 +40,17 @@ variable "vnet_address_space" {
   default     = ["10.0.0.0/16"]
 }
 
-# variable "container_apps_subnet_name" {
-#   description = "The name of the subnet for Container Apps"
-#   type        = string
-#   default     = "container-apps-subnet"
-# }
+variable "container_apps_subnet_name" {
+  description = "The name of the subnet for Container Apps"
+  type        = string
+  default     = "container-apps-subnet"
+}
 
-# variable "container_apps_subnet_address" {
-#   description = "The address prefix for the Container Apps subnet"
-#   type        = string
-#   default     = "10.0.1.0/27"
-# }
+variable "container_apps_subnet_address" {
+  description = "The address prefix for the Container Apps subnet"
+  type        = string
+  default     = "10.0.1.0/27"
+}
 
 variable "postgresql_subnet_name" {
   description = "The name of the subnet for PostgreSQL Flexible Servers"
