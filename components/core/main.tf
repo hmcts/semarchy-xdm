@@ -8,12 +8,13 @@ module "key_vault" {
   name                = var.key_vault_name
   resource_group_name = azurerm_resource_group.core.name
   location            = azurerm_resource_group.core.location
-  # tenant_id           = data.azurerm_client_config.current.tenant_id
-  object_id = data.azurerm_client_config.current.object_id
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  object_id           = data.azurerm_client_config.current.object_id
   # object_id           = var.key_vault_admin_object_ids
-  env         = var.env
-  product     = var.product
-  common_tags = var.common_tags
+  env                = var.env
+  product            = var.product
+  product_group_name = "DTS Semarchy XDM sbox"
+  common_tags        = var.common_tags
 }
 
 resource "azurerm_virtual_network" "core" {
