@@ -52,11 +52,6 @@ variable "postgresql_subnet_address" {
   default     = "10.0.2.0/27"
 }
 
-# variable "postgresql_subscription_id" {
-#   description = "The subscription ID for the PostgreSQL resources"
-#   type        = string
-# }
-
 variable "general_purpose_subnet_name" {
   description = "The name of the general purpose subnet"
   type        = string
