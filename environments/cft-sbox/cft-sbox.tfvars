@@ -1,6 +1,6 @@
 # key_vault_admin_object_ids = ["<actual-object-id>"]
 env     = "sbox"
-product = "DTS-Semarchy-XDM-Sbox"
+product = "Semarchy XDM"
 common_tags = {
   environment = "sbox"
   project     = "semarchy-xdm"
