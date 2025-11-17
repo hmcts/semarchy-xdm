@@ -1,7 +1,7 @@
 variable "resource_group_name" {
   description = "The name of the Resource Group"
   type        = string
-  default     = "example"
+  default     = "semarchy-xdm-core-rg"
 }
 
 variable "resource_group_location" {
@@ -13,25 +13,13 @@ variable "resource_group_location" {
 variable "key_vault_name" {
   description = "The name of the Key Vault"
   type        = string
-  default     = "example-keyvault"
+  default     = "semarchy-xdm-keyvault"
 }
-
-# variable "key_vault_sku" {
-#   description = "The SKU of the Key Vault"
-#   type        = string
-#   default     = "standard"
-# }
-
-# variable "key_vault_admin_object_ids" {
-#   description = "The Object IDs of the Key Vault administrators"
-#   type        = list(string)
-#   default     = []
-# }
 
 variable "vnet_name" {
   description = "The name of the Virtual Network"
   type        = string
-  default     = "example-vnet"
+  default     = "semarchy-xdm-vnet"
 }
 
 variable "vnet_address_space" {
@@ -84,13 +72,13 @@ variable "general_purpose_subnet_address" {
 variable "nsg_name" {
   description = "The name of the Network Security Group"
   type        = string
-  default     = "example-nsg"
+  default     = "semarchy-xdm-nsg"
 }
 
 variable "route_table_name" {
   description = "The name of the Route Table"
   type        = string
-  default     = "example-route-table"
+  default     = "semarchy-xdm-route-table"
 }
 
 variable "env" {
