@@ -1,0 +1,80 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+pr:
+  - main
+
+schedules:
+  - cron: "0 18 * * 1-5"
+    displayName: Daily 6pm build
+    branches:
+      include:
+        - main
+    always: "true"
+
+resources:
+  repositories:
+    - repository: cnp-azuredevops-libraries
+      type: github
+      ref: refs/heads/master
+      name: hmcts/cnp-azuredevops-libraries
+      endpoint: "hmcts"
+
+parameters:
+  - name: overrideAction
+    type: string
+    default: plan
+    values:
+      - plan
+      - apply
+      - destroy
+  - name: environment_components
+    type: object
+    default:
+      - deployment: "cft_sbox_all"
+        environment: "cft-sbox"
+        component: "core"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "Precheck"
+
+variables:
+  - name: timeoutInMinutes
+    value: 60
+  - name: agentImage
+    value: ubuntu-latest
+  - name: product
+    value: cft-sbox
+  - name: terraformInitSubscription
+    value: 04d27a32-7a07-48b3-95b8-3c8691e1a263
+  - template: vars/input-variables.yaml@cnp-azuredevops-libraries
+
+stages:
+  - stage: Precheck
+    jobs:
+      - job:
+        pool:
+          vmImage: ${{ variables.agentImage }}
+        steps:
+          - template: steps/terraform-precheck.yaml@cnp-azuredevops-libraries
+            parameters:
+              keyvaultName: "cftapps-sbox"
+              keyvaultSecret: "azure-devops-sp-token"
+              serviceConnection: "DCD-CFTAPPS-SBOX"
+              overrideAction: ${{ parameters.overrideAction }}
+
+  - stage: cft_sbox_all
+    dependsOn: Precheck
+    jobs:
+      - job: TerraformPlanApply
+        pool: hmcts-sds-ptl
+        timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+        steps:
+          - template: steps/terraform.yaml@cnp-azuredevops-libraries
+            parameters:
+              overrideAction: ${{ parameters.overrideAction }}
+              environment: "cft-sbox"
+              component: "core"
+              serviceConnection: "DCD-CFTAPPS-SBOX"
