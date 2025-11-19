@@ -8,19 +8,9 @@ output "vnet_address_space" {
   value       = azurerm_virtual_network.core.address_space
 }
 
-output "container_apps_subnet_name" {
-  description = "The name of the Container Apps subnet"
-  value       = var.container_apps_subnet_name
-}
-
 output "container_apps_subnet_address" {
   description = "The address prefix of the Container Apps subnet"
   value       = var.container_apps_subnet_address
-}
-
-output "postgresql_subnet_name" {
-  description = "The name of the PostgreSQL Flexible Servers subnet"
-  value       = var.postgresql_subnet_name
 }
 
 output "postgresql_subnet_address" {

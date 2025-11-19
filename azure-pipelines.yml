@@ -34,8 +34,8 @@ parameters:
   - name: environment_components
     type: object
     default:
-      - deployment: "cft_sbox_all"
-        environment: "cft-sbox"
+      - deployment: "sandbox-core"
+        environment: "sandbox"
         component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
@@ -46,7 +46,7 @@ variables:
   - name: agentImage
     value: ubuntu-latest
   - name: product
-    value: cft-sbox
+    value: csds
   - name: terraformInitSubscription
     value: 04d27a32-7a07-48b3-95b8-3c8691e1a263
   - template: vars/input-variables.yaml@cnp-azuredevops-libraries
@@ -65,16 +65,17 @@ stages:
               serviceConnection: "azurerm-sandbox"
               overrideAction: ${{ parameters.overrideAction }}
 
-  - stage: cft_sbox_all
-    dependsOn: Precheck
-    jobs:
-      - job: TerraformPlanApply
-        pool: hmcts-sds-ptl
-        timeoutInMinutes: ${{ variables.timeoutInMinutes }}
-        steps:
-          - template: steps/terraform.yaml@cnp-azuredevops-libraries
-            parameters:
-              overrideAction: ${{ parameters.overrideAction }}
-              environment: "cft-sbox"
-              component: "core"
-              serviceConnection: "DCD-CFTAPPS-SBOX"
+  - ${{ each deployment in parameters.environment_components }}:
+    - stage: ${{ deployment.deployment }}
+      dependsOn: Precheck
+      jobs:
+        - job: TerraformPlanApply
+          pool: hmcts-sds-ptl
+          timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+          steps:
+            - template: steps/terraform.yaml@cnp-azuredevops-libraries
+              parameters:
+                overrideAction: ${{ parameters.overrideAction }}
+                environment: ${{ deployment.environment}}
+                component: ${{ deployment.component }}
+                serviceConnection: ${{ deployment.service_connection }}
