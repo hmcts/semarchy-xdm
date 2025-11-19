@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "resource_group_location" {
   description = "The Azure region where the Resource Group will be created"
   type        = string
-  default     = "West Europe"
+  default     = "uksouth"
 }
 
 variable "key_vault_name" {
