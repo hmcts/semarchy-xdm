@@ -19,25 +19,21 @@ variable "key_vault_name" {
 variable "vnet_address_space" {
   description = "The address space for the Virtual Network"
   type        = list(string)
-  default     = ["10.0.0.0/16"]
 }
 
 variable "container_apps_subnet_address" {
   description = "The address prefix for the Container Apps subnet"
   type        = string
-  default     = "10.0.1.0/27"
 }
 
 variable "postgresql_subnet_address" {
   description = "The address prefix for the PostgreSQL Flexible Servers subnet"
   type        = string
-  default     = "10.0.2.0/27"
 }
 
 variable "general_purpose_subnet_address" {
   description = "The address prefix for the general-purpose subnet"
   type        = string
-  default     = "10.0.3.0/27"
 }
 
 variable "env" {

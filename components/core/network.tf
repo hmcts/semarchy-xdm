@@ -14,6 +14,12 @@ module "networking" {
       subnets = {
         container-apps = {
           address_prefixes = [var.container_apps_subnet_address]
+          delegations = {
+            containerapps = {
+              service_name = "Microsoft.App/environments"
+              actions      = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+            }
+          }
         }
         general = {
           address_prefixes = [var.general_purpose_subnet_address]
