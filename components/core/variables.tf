@@ -55,7 +55,6 @@ variable "builtFrom" {
 variable "next_hop_ip_address" {
   description = "The IP address of the next hop for the default route"
   type        = string
-  default     = "10.100.100.10"
 }
 
 variable "storage_replication_type" {
@@ -74,4 +73,14 @@ variable "storage_share_quota" {
   description = "The quota for the Storage Share in GB"
   type        = number
   default     = 128
+}
+
+variable "hub_vnet_name" {
+  description = "The name of the HUB virtual network."
+  type        = string
+}
+
+variable "hub_resource_group_name" {
+  description = "The name of the resource group containing the HUB virtual network."
+  type        = string
 }

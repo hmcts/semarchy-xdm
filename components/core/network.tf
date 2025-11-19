@@ -57,3 +57,25 @@ module "networking" {
     }
   }
 }
+
+module "vnet_peer_hub" {
+  source = "github.com/hmcts/terraform-module-vnet-peering?ref=master"
+  peerings = {
+    source = {
+      name           = "${module.networking.vnet_names["csds"]}-vnet-${var.env}-to-hub"
+      vnet_id        = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${module.networking.resource_group_name}/providers/Microsoft.Network/virtualNetworks/${module.networking.vnet_names["csds"]}"
+      vnet           = module.networking.vnet_names["csds"]
+      resource_group = module.networking.resource_group_name
+    }
+    target = {
+      name           = "hub-to-${local.name}-vnet-${var.env}"
+      vnet           = var.hub_vnet_name
+      resource_group = var.hub_resource_group_name
+    }
+  }
+
+  providers = {
+    azurerm.initiator = azurerm
+    azurerm.target    = azurerm.hub
+  }
+}
