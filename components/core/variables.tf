@@ -40,18 +40,6 @@ variable "general_purpose_subnet_address" {
   default     = "10.0.3.0/27"
 }
 
-variable "nsg_name" {
-  description = "The name of the Network Security Group"
-  type        = string
-  default     = "semarchy-xdm-nsg"
-}
-
-variable "route_table_name" {
-  description = "The name of the Route Table"
-  type        = string
-  default     = "semarchy-xdm-route-table"
-}
-
 variable "env" {
   description = "The environment (e.g., dev, test, prod)"
   type        = string
@@ -60,6 +48,7 @@ variable "env" {
 variable "product" {
   description = "The product or application name"
   type        = string
+  default     = "csds"
 }
 
 variable "builtFrom" {
