@@ -57,3 +57,21 @@ variable "next_hop_ip_address" {
   type        = string
   default     = "10.100.100.10"
 }
+
+variable "storage_replication_type" {
+  description = "The replication type for the Storage Account"
+  type        = string
+  default     = "LRS"
+}
+
+variable "storage_account_kind" {
+  description = "The kind of Storage Account"
+  type        = string
+  default     = "StorageV2"
+}
+
+variable "storage_share_quota" {
+  description = "The quota for the Storage Share in GB"
+  type        = number
+  default     = 128
+}

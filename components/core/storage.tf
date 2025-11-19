@@ -1,0 +1,22 @@
+module "storage" {
+  source                   = "git@github.com:hmcts/cnp-module-storage-account?ref=4.x"
+  env                      = var.env
+  storage_account_name     = "csds${var.env}storage"
+  resource_group_name      = azurerm_resource_group.core.name
+  location                 = azurerm_resource_group.core.location
+  account_kind             = var.storage_account_kind
+  account_replication_type = var.storage_replication_type
+
+  private_endpoint_subnet_id = module.networking.subnet_ids["csds-general"]
+}
+
+resource "azurerm_storage_queue" "this" {
+  name                 = "csds-queue-${var.env}"
+  storage_account_name = module.storage.storage_account_name
+}
+
+resource "azurerm_storage_share" "this" {
+  name               = "csds-file-${var.env}"
+  storage_account_id = module.storage.storage_account_id
+  quota              = var.storage_share_quota
+}
