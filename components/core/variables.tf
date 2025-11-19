@@ -59,5 +59,5 @@ variable "builtFrom" {
 variable "next_hop_ip_address" {
   description = "The IP address of the next hop for the default route"
   type        = string
-  default     = "10.100.100.10/32"
+  default     = "10.100.100.10"
 }
