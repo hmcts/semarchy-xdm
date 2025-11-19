@@ -60,9 +60,9 @@ stages:
         steps:
           - template: steps/terraform-precheck.yaml@cnp-azuredevops-libraries
             parameters:
-              keyvaultName: "cftapps-sbox"
+              keyvaultName: "infra-vault-nonprod"
               keyvaultSecret: "azure-devops-sp-token"
-              serviceConnection: "DCD-CFTAPPS-SBOX"
+              serviceConnection: "azurerm-sandbox"
               overrideAction: ${{ parameters.overrideAction }}
 
   - stage: cft_sbox_all
