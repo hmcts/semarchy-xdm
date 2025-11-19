@@ -6,6 +6,7 @@ module "storage" {
   location                 = azurerm_resource_group.core.location
   account_kind             = var.storage_account_kind
   account_replication_type = var.storage_replication_type
+  common_tags              = module.ctags.common_tags
 
   private_endpoint_subnet_id = module.networking.subnet_ids["csds-general"]
 }
