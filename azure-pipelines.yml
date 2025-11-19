@@ -34,7 +34,7 @@ parameters:
   - name: environment_components
     type: object
     default:
-      - deployment: "sandbox-core"
+      - deployment: "sandbox_core"
         environment: "sandbox"
         component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
