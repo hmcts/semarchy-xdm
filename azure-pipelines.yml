@@ -35,7 +35,7 @@ parameters:
     type: object
     default:
       - deployment: "sandbox_core"
-        environment: "sandbox"
+        environment: "sbox"
         component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
