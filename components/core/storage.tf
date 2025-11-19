@@ -7,6 +7,8 @@ module "storage" {
   account_kind             = var.storage_account_kind
   account_replication_type = var.storage_replication_type
   common_tags              = module.ctags.common_tags
+
+  private_endpoint_subnet_id = module.networking.subnet_ids["csds-general"]
 }
 
 resource "azurerm_storage_queue" "this" {
