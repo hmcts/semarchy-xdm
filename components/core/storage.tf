@@ -13,11 +13,11 @@ module "storage" {
 
 resource "azurerm_storage_queue" "this" {
   name                 = "csds-queue-${var.env}"
-  storage_account_name = module.storage.storage_account_name
+  storage_account_name = module.storage.storageaccount_name
 }
 
 resource "azurerm_storage_share" "this" {
   name               = "csds-file-${var.env}"
-  storage_account_id = module.storage.storage_account_id
+  storage_account_id = module.storage.storageaccount_id
   quota              = var.storage_share_quota
 }
