@@ -1,10 +1,12 @@
 module "networking" {
   source = "github.com/hmcts/terraform-module-azure-virtual-networking?ref=main"
 
-  env         = var.env
-  product     = var.product
-  common_tags = module.ctags.common_tags
-  component   = "network"
+  env                          = var.env
+  product                      = var.product
+  common_tags                  = module.ctags.common_tags
+  component                    = "network"
+  existing_resource_group_name = azurerm_resource_group.core.name
+  location                     = azurerm_resource_group.core.location
 
   vnets = {
     csds = {
