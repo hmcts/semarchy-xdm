@@ -16,22 +16,10 @@ variable "key_vault_name" {
   default     = "semarchy-xdm-keyvault"
 }
 
-variable "vnet_name" {
-  description = "The name of the Virtual Network"
-  type        = string
-  default     = "semarchy-xdm-vnet"
-}
-
 variable "vnet_address_space" {
   description = "The address space for the Virtual Network"
   type        = list(string)
   default     = ["10.0.0.0/16"]
-}
-
-variable "container_apps_subnet_name" {
-  description = "The name of the subnet for Container Apps"
-  type        = string
-  default     = "container-apps-subnet"
 }
 
 variable "container_apps_subnet_address" {
@@ -40,22 +28,10 @@ variable "container_apps_subnet_address" {
   default     = "10.0.1.0/27"
 }
 
-variable "postgresql_subnet_name" {
-  description = "The name of the subnet for PostgreSQL Flexible Servers"
-  type        = string
-  default     = "postgresql-subnet"
-}
-
 variable "postgresql_subnet_address" {
   description = "The address prefix for the PostgreSQL Flexible Servers subnet"
   type        = string
   default     = "10.0.2.0/27"
-}
-
-variable "general_purpose_subnet_name" {
-  description = "The name of the general purpose subnet"
-  type        = string
-  default     = "general-purpose-subnet"
 }
 
 variable "general_purpose_subnet_address" {
@@ -89,4 +65,10 @@ variable "product" {
 variable "builtFrom" {
   type    = string
   default = "hmcts/semarchy-xdm"
+}
+
+variable "next_hop_ip_address" {
+  description = "The IP address of the next hop for the default route"
+  type        = string
+  default     = "10.100.100.10/32"
 }
