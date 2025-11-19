@@ -84,3 +84,8 @@ variable "hub_resource_group_name" {
   description = "The name of the resource group containing the HUB virtual network."
   type        = string
 }
+
+variable "hub_subscription_id" {
+  description = "The subscription ID containing the HUB virtual network."
+  type        = string
+}
