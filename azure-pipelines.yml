@@ -39,6 +39,11 @@ parameters:
         component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
+      - deployment: "sandbox_database"
+        environment: "sbox"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "Precheck"
 
 variables:
   - name: timeoutInMinutes
@@ -66,18 +71,18 @@ stages:
               overrideAction: ${{ parameters.overrideAction }}
 
   - ${{ each deployment in parameters.environment_components }}:
-    - stage: ${{ deployment.deployment }}
-      dependsOn: Precheck
-      jobs:
-        - job: TerraformPlanApply
-          pool: hmcts-sds-ptl
-          timeoutInMinutes: ${{ variables.timeoutInMinutes }}
-          steps:
-            - template: steps/terraform.yaml@cnp-azuredevops-libraries
-              parameters:
-                overrideAction: ${{ parameters.overrideAction }}
-                environment: ${{ deployment.environment}}
-                component: ${{ deployment.component }}
-                serviceConnection: ${{ deployment.service_connection }}
-                product: ${{ variables.product }}
-                terraformInitSubscription: ${{ variables.terraformInitSubscription }}
+      - stage: ${{ deployment.deployment }}
+        dependsOn: Precheck
+        jobs:
+          - job: TerraformPlanApply
+            pool: hmcts-sds-ptl
+            timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+            steps:
+              - template: steps/terraform.yaml@cnp-azuredevops-libraries
+                parameters:
+                  overrideAction: ${{ parameters.overrideAction }}
+                  environment: ${{ deployment.environment}}
+                  component: ${{ deployment.component }}
+                  serviceConnection: ${{ deployment.service_connection }}
+                  product: ${{ variables.product }}
+                  terraformInitSubscription: ${{ variables.terraformInitSubscription }}
