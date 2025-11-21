@@ -68,7 +68,7 @@ module "vnet_peer_hub" {
       resource_group = module.networking.resource_group_name
     }
     target = {
-      name           = "hub-to-${local.name}-vnet-${var.env}"
+      name           = "hub-to-${module.networking.vnet_names["csds"]}-vnet-${var.env}"
       vnet           = var.hub_vnet_name
       resource_group = var.hub_resource_group_name
     }
