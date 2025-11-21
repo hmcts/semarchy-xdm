@@ -5,7 +5,3 @@ module "ctags" {
   environment = var.env
   product     = var.product
 }
-
-data "azurerm_client_config" "current" {}
-
-data "azurerm_subscription" "current" {}

@@ -51,7 +51,7 @@ resource "azurerm_key_vault_secret" "postgresql_admin_password" {
   depends_on = [random_password.postgresql_admin]
 }
 
-resource "azurerm_postgresql_flexible_server" "postgresql" {
+resource "azurerm_postgresql_flexible_server" "semarchy" {
   name                = "csds-postgresql-${var.env}"
   resource_group_name = var.resource_group_name
   location            = var.resource_group_location
@@ -92,5 +92,5 @@ resource "azurerm_postgresql_flexible_server_database" "semarchy" {
   collation = "en_US.utf8"
   charset   = "UTF8"
 
-  depends_on = [azurerm_postgresql_flexible_server.postgresql]
+  depends_on = [azurerm_postgresql_flexible_server.semarchy]
 }

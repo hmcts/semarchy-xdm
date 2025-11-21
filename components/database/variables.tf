@@ -9,6 +9,17 @@ variable "env" {
   type        = string
 }
 
+variable "product" {
+  description = "The product or application name"
+  type        = string
+  default     = "csds"
+}
+
+variable "builtFrom" {
+  type    = string
+  default = "hmcts/semarchy-xdm"
+}
+
 variable "resource_group_location" {
   description = "The Azure region where the Resource Group will be created"
   type        = string
