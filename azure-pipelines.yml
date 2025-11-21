@@ -70,7 +70,7 @@ stages:
       dependsOn: Precheck
       jobs:
         - job: TerraformPlanApply
-          pool: hmcts-sds-ptl
+          pool: hmcts-cftptl-agent-pool
           timeoutInMinutes: ${{ variables.timeoutInMinutes }}
           steps:
             - template: steps/terraform.yaml@cnp-azuredevops-libraries
