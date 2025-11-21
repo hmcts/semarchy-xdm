@@ -3,11 +3,6 @@ output "postgresql_server_fqdn" {
   value       = azurerm_postgresql_flexible_server.semarchy.fqdn
 }
 
-output "postgresql_server_state" {
-  description = "Current state of the PostgreSQL server"
-  value       = azurerm_postgresql_flexible_server.semarchy.state
-}
-
 output "postgresql_server_id" {
   description = "ID of the PostgreSQL Flexible Server"
   value       = azurerm_postgresql_flexible_server.semarchy.id
@@ -32,12 +27,10 @@ output "key_vault_secret_name" {
 output "postgresql_configuration_summary" {
   description = "Summary of all PostgreSQL configuration"
   value = {
-    server_name  = azurerm_postgresql_flexible_server.semarchy.name
-    server_fqdn  = azurerm_postgresql_flexible_server.semarchy.fqdn
-    server_state = azurerm_postgresql_flexible_server.semarchy.state
+    server_name = azurerm_postgresql_flexible_server.semarchy.name
+    server_fqdn = azurerm_postgresql_flexible_server.semarchy.fqdn
 
     sku_name = azurerm_postgresql_flexible_server.semarchy.sku_name
-    sku_tier = azurerm_postgresql_flexible_server.semarchy.sku_tier
 
     storage_mb   = azurerm_postgresql_flexible_server.semarchy.storage_mb
     storage_gb   = azurerm_postgresql_flexible_server.semarchy.storage_mb / 1024
