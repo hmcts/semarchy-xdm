@@ -66,6 +66,8 @@ resource "azurerm_postgresql_flexible_server" "semarchy" {
   delegated_subnet_id = data.azurerm_subnet.postgresql.id
   private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
 
+  public_network_access_enabled = false
+
   administrator_login    = "csdsadmin"
   administrator_password = random_password.postgresql_admin.result
 
