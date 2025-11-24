@@ -39,6 +39,11 @@ parameters:
         component: "core"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
+      - deployment: "sandbox_database"
+        environment: "sbox"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn: "Precheck"
 
 variables:
   - name: timeoutInMinutes
