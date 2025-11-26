@@ -16,3 +16,9 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "azurerm" {
+  alias           = "dts_intsvc"
+  subscription_id = local.dts_intsvc_subscription_id
+  features {}
+}

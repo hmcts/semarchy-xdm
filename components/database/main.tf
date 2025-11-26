@@ -18,16 +18,17 @@ data "azurerm_key_vault" "csds" {
   resource_group_name = var.resource_group_name
 }
 
-resource "azurerm_private_dns_zone" "postgresql" {
+data "azurerm_private_dns_zone" "postgresql" {
+  provider            = azurerm.dts_intsvc
   name                = "privatelink.postgres.database.azure.com"
-  resource_group_name = var.resource_group_name
-  tags                = module.ctags.common_tags
+  resource_group_name = local.dts_dns_resource_group
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
+  provider              = azurerm.dts_intsvc
   name                  = "postgresql-vnet-link-${var.env}"
-  resource_group_name   = var.resource_group_name
-  private_dns_zone_name = azurerm_private_dns_zone.postgresql.name
+  resource_group_name   = local.dts_dns_resource_group
+  private_dns_zone_name = data.azurerm_private_dns_zone.postgresql.name
   virtual_network_id    = data.azurerm_virtual_network.csds.id
   registration_enabled  = false
   tags                  = module.ctags.common_tags
@@ -64,7 +65,7 @@ resource "azurerm_postgresql_flexible_server" "semarchy" {
   version = "17"
 
   delegated_subnet_id = data.azurerm_subnet.postgresql.id
-  private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgresql.id
 
   public_network_access_enabled = false
 
