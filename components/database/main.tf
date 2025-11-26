@@ -63,7 +63,6 @@ resource "azurerm_postgresql_flexible_server" "semarchy" {
   storage_tier = "P30"
 
   version = "17"
-  zone    = null
 
   delegated_subnet_id = data.azurerm_subnet.postgresql.id
   private_dns_zone_id = data.azurerm_private_dns_zone.postgresql.id
@@ -87,6 +86,13 @@ resource "azurerm_postgresql_flexible_server" "semarchy" {
   depends_on = [
     azurerm_private_dns_zone_virtual_network_link.postgresql
   ]
+
+  lifecycle {
+    ignore_changes = [
+      zone,
+      high_availability
+    ]
+  }
 
 }
 
