@@ -65,7 +65,7 @@ resource "azurerm_postgresql_flexible_server" "semarchy" {
   version = "17"
 
   delegated_subnet_id = data.azurerm_subnet.postgresql.id
-  private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
+  private_dns_zone_id = data.azurerm_private_dns_zone.postgresql.id
 
   public_network_access_enabled = false
 
