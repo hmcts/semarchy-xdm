@@ -18,18 +18,17 @@ data "azurerm_key_vault" "csds" {
   resource_group_name = var.resource_group_name
 }
 
-resource "azurerm_private_dns_zone" "postgresql" {
+data "azurerm_private_dns_zone" "postgresql" {
   provider            = azurerm.dts_intsvc
   name                = "privatelink.postgres.database.azure.com"
   resource_group_name = local.dts_dns_resource_group
-  tags                = module.ctags.common_tags
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgresql" {
   provider              = azurerm.dts_intsvc
   name                  = "postgresql-vnet-link-${var.env}"
   resource_group_name   = local.dts_dns_resource_group
-  private_dns_zone_name = azurerm_private_dns_zone.postgresql.name
+  private_dns_zone_name = data.azurerm_private_dns_zone.postgresql.name
   virtual_network_id    = data.azurerm_virtual_network.csds.id
   registration_enabled  = false
   tags                  = module.ctags.common_tags
