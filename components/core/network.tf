@@ -53,7 +53,28 @@ module "networking" {
   network_security_groups = {
     nsg = {
       subnets = ["csds-container-apps", "csds-general", "csds-postgres"]
-      rules   = {}
+      rules = {
+        allow_vnet_inbound = {
+          priority                   = 4010
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "*"
+          source_port_range          = "*"
+          destination_port_range     = "*"
+          source_address_prefix      = "VirtualNetwork"
+          destination_address_prefix = "VirtualNetwork"
+        }
+        allow_azure_load_balancer = {
+          priority                   = 4020
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "*"
+          source_port_range          = "*"
+          destination_port_range     = "*"
+          source_address_prefix      = "AzureLoadBalancer"
+          destination_address_prefix = "*"
+        }
+      }
     }
   }
 }
