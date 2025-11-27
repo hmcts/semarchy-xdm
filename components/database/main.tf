@@ -104,3 +104,9 @@ resource "azurerm_postgresql_flexible_server_database" "semarchy" {
 
   depends_on = [azurerm_postgresql_flexible_server.semarchy]
 }
+
+resource "azurerm_postgresql_flexible_server_configuration" "azure_extensions" {
+  name      = "azure.extensions"
+  server_id = azurerm_postgresql_flexible_server.semarchy.id
+  value     = "uuid-ossp,fuzzystrmatch"
+}
