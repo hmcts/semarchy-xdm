@@ -19,3 +19,33 @@ container_memory         = "4Gi"
 ingress_enabled          = true
 ingress_external_enabled = false
 ingress_target_port      = 8080
+
+container_env_vars = [
+  { name = "POSTGRES_HOST", secret_name = "semarchy-host" },
+  { name = "POSTGRES_DB", secret_name = "semarchy-database" },
+  { name = "POSTGRES_USER", secret_name = "semarchy-admin-user" },
+  { name = "POSTGRES_PASSWORD", secret_name = "postgresql-admin-password" }
+]
+
+key_vault_secrets = [
+  {
+    name                  = "semarchy-host"
+    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+    key_vault_secret_name = "semarchy-host"
+  },
+  {
+    name                  = "semarchy-database"
+    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+    key_vault_secret_name = "semarchy-database"
+  },
+  {
+    name                  = "semarchy-admin-user"
+    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+    key_vault_secret_name = "semarchy-admin-user"
+  },
+  {
+    name                  = "postgresql-admin-password"
+    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+    key_vault_secret_name = "postgresql-admin-password"
+  }
+]
