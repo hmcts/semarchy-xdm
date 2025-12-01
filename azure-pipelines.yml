@@ -46,7 +46,7 @@ parameters:
         dependsOn: "Precheck"
       - deployment: "sandbox_container_app"
         environment: "sbox"
-        component: "container_app"
+        component: "container-app"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn: "Precheck"
 
