@@ -4,6 +4,15 @@ resource "azurerm_resource_group" "core" {
   tags     = module.ctags.common_tags
 }
 
+resource "azurerm_log_analytics_workspace" "main" {
+  name                = "csds-law-${var.env}"
+  location            = azurerm_resource_group.core.location
+  resource_group_name = azurerm_resource_group.core.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+  tags                = module.ctags.common_tags
+}
+
 module "key_vault" {
   source              = "github.com/hmcts/cnp-module-key-vault"
   name                = "csds-keyvault-${var.env}"
