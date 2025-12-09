@@ -2,7 +2,7 @@ env                            = "sbox"
 vnet_address_space             = ["10.25.236.64/26"]
 container_apps_subnet_address  = "10.25.236.64/27"
 general_purpose_subnet_address = "10.25.236.96/28"
-postgresql_subnet_address      = "10.25.236.112/29"
+postgresql_subnet_address      = "10.25.236.112/28"
 
 hub_vnet_name           = "hmcts-hub-sbox-int"
 hub_resource_group_name = "hmcts-hub-sbox-int"
