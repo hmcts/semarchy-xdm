@@ -17,7 +17,7 @@ max_replicas             = 1
 container_cpu            = 2.0
 container_memory         = "4Gi"
 ingress_enabled          = true
-ingress_external_enabled = false
+ingress_external_enabled = true
 ingress_target_port      = 8080
 
 container_env_vars = [
