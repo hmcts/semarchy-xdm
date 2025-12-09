@@ -24,7 +24,7 @@ data "azurerm_log_analytics_workspace" "main" {
 }
 
 module "container_app" {
-  source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
+  source = "github.com/hmcts/terraform-module-azure-container-app?ref=feat/workload-profiles"
 
   product   = var.product
   component = var.component
