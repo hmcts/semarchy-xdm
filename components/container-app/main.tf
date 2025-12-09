@@ -44,8 +44,8 @@ module "container_app" {
   container_apps = {
     active = {
       containers = {
-        (var.component) = {
-          image  = var.container_image
+        "${var.component}-active" = {
+          image  = var.active_container_image
           cpu    = var.container_cpu
           memory = var.container_memory
           env    = var.container_env_vars
@@ -57,8 +57,29 @@ module "container_app" {
       ingress_target_port      = var.ingress_target_port
       ingress_transport        = "auto"
 
-      min_replicas = var.min_replicas
-      max_replicas = var.max_replicas
+      // Only one instance of the "active" component should run.
+      min_replicas = 1
+      max_replicas = 1
+
+      key_vault_secrets = var.key_vault_secrets
+    }
+    passive = {
+      containers = {
+        "${var.component}-passive" = {
+          image  = var.passive_container_image
+          cpu    = var.container_cpu
+          memory = var.container_memory
+          env    = var.container_env_vars
+        }
+      }
+
+      ingress_enabled          = var.ingress_enabled
+      ingress_external_enabled = var.ingress_external_enabled
+      ingress_target_port      = var.ingress_target_port
+      ingress_transport        = "auto"
+
+      min_replicas = var.passive_min_replicas
+      max_replicas = var.passive_max_replicas
 
       key_vault_secrets = var.key_vault_secrets
     }
