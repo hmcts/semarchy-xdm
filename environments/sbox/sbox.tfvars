@@ -22,10 +22,10 @@ ingress_external_enabled = true
 ingress_target_port      = 8080
 
 container_env_vars = [
-  { name = "POSTGRES_HOST", secret_name = "semarchy-host" },
-  { name = "POSTGRES_DB", secret_name = "semarchy-database" },
-  { name = "POSTGRES_USER", secret_name = "semarchy-admin-user" },
-  { name = "POSTGRES_PASSWORD", secret_name = "postgresql-admin-password" }
+  { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver"},
+  { name = "XDM_REPOSITORY_URL", secret_name = "semarchy-host" },
+  { name = "XDM_REPOSITORY_USER", secret_name = "semarchy-admin-user" },
+  { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" }
 ]
 
 key_vault_secrets = [
