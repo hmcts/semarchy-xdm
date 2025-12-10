@@ -107,24 +107,6 @@ module "container_app" {
         environment_certificate_key = "csds-passive-${var.env}-cert"
       }
     }
-    nginx = {
-      containers = {
-        "nginx" = {
-          image  = "nginx:latest"
-          cpu    = 0.5
-          memory = "1Gi"
-          env    = []
-        }
-      }
-
-      ingress_enabled          = true
-      ingress_external_enabled = true
-      ingress_target_port      = 80
-
-      // Only one instance of the nginx component should run.
-      min_replicas = 1
-      max_replicas = 1
-    }
   }
 }
 
