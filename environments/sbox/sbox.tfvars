@@ -51,4 +51,5 @@ key_vault_secrets = [
   }
 ]
 
-environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-sandbox-platform-hmcts-net"
+active_environment_certificate_key_vault_secret_id  = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-active-sandbox-platform-hmcts-net-cert"
+passive_environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-passive-sandbox-platform-hmcts-net-cert"
