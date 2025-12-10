@@ -14,7 +14,7 @@ active_container_image   = "semarchy/xdm:2025.1.9"
 passive_container_image  = "semarchy/xdm:2025.1.9-passive"
 resource_group_name      = "semarchy-xdm-core-rg"
 passive_min_replicas     = 1
-passive_max_replicas     = 1
+passive_max_replicas     = 2
 container_cpu            = 2.0
 container_memory         = "4Gi"
 ingress_enabled          = true
@@ -25,7 +25,8 @@ container_env_vars = [
   { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver" },
   { name = "XDM_REPOSITORY_URL", secret_name = "semarchy-host" },
   { name = "XDM_REPOSITORY_USERNAME", secret_name = "semarchy-admin-user" },
-  { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" }
+  { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" },
+  //{ name = "SEMARCHY_SETUP_TOKEN", secret_name = "setup-token" }
 ]
 
 key_vault_secrets = [
@@ -48,7 +49,13 @@ key_vault_secrets = [
     name                  = "postgresql-admin-password"
     key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
     key_vault_secret_name = "postgresql-admin-password"
-  }
+  },
+  // Setup token for Semarchy XDM
+  //{
+  //  name                  = "setup-token"
+  //  key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+  //  key_vault_secret_name = "setup-token"
+  //},
 ]
 
 active_environment_certificate_key_vault_secret_id  = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-active-sandbox-platform-hmcts-net-cert"
