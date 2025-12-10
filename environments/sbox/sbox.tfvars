@@ -22,9 +22,9 @@ ingress_external_enabled = true
 ingress_target_port      = 8080
 
 container_env_vars = [
-  { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver"},
+  { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver" },
   { name = "XDM_REPOSITORY_URL", secret_name = "semarchy-host" },
-  { name = "XDM_REPOSITORY_USER", secret_name = "semarchy-admin-user" },
+  { name = "XDM_REPOSITORY_USERNAME", secret_name = "semarchy-admin-user" },
   { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" }
 ]
 
