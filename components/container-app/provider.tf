@@ -12,3 +12,9 @@ terraform {
 provider "azurerm" {
   features {}
 }
+
+provider "azurerm" {
+  alias = "dns"
+  features {}
+  subscription_id = local.dns_sub_id
+}

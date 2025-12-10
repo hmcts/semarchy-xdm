@@ -26,6 +26,11 @@ data "azurerm_log_analytics_workspace" "main" {
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=feat/workload-profiles"
 
+  providers = {
+    azurerm     = azurerm
+    azurerm.dns = azurerm.dns
+  }
+
   product   = var.product
   component = var.component
   env       = var.env
@@ -62,6 +67,12 @@ module "container_app" {
       max_replicas = 1
 
       key_vault_secrets = var.key_vault_secrets
+
+      custom_domain = {
+        fqdn                     = "csds-active.${var.env}.platform.hmcts.net"
+        zone_name                = "${var.env}.platform.hmcts.net"
+        zone_resource_group_name = "reformMgmtRG"
+      }
     }
     passive = {
       containers = {
@@ -82,6 +93,12 @@ module "container_app" {
       max_replicas = var.passive_max_replicas
 
       key_vault_secrets = var.key_vault_secrets
+
+      custom_domain = {
+        fqdn                     = "csds-passive.${var.env}.platform.hmcts.net"
+        zone_name                = "${var.env}.platform.hmcts.net"
+        zone_resource_group_name = "reformMgmtRG"
+      }
     }
   }
 }
