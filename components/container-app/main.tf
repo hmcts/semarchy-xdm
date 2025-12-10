@@ -47,7 +47,8 @@ module "container_app" {
   internal_load_balancer_enabled = true
 
   environment_certificates = {
-    "csds-${var.env}-cert" = var.environment_certificate_key_vault_secret_id
+    "csds-active-${var.env}-cert"  = var.active_environment_certificate_key_vault_secret_id
+    "csds-passive-${var.env}-cert" = var.passive_environment_certificate_key_vault_secret_id
   }
 
   container_apps = {
@@ -76,7 +77,7 @@ module "container_app" {
         fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
         zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name    = "reformMgmtRG"
-        environment_certificate_key = "csds-${var.env}-cert"
+        environment_certificate_key = "csds-active-${var.env}-cert"
       }
     }
     passive = {
@@ -103,7 +104,7 @@ module "container_app" {
         fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
         zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name    = "reformMgmtRG"
-        environment_certificate_key = "csds-${var.env}-cert"
+        environment_certificate_key = "csds-passive-${var.env}-cert"
       }
     }
   }
