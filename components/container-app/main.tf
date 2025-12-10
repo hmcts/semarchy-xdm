@@ -73,9 +73,10 @@ module "container_app" {
       key_vault_secrets = var.key_vault_secrets
 
       custom_domain = {
-        fqdn                     = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
-        zone_name                = "${local.env_map[var.env]}.platform.hmcts.net"
-        zone_resource_group_name = "reformMgmtRG"
+        fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "csds-${var.env}-cert"
       }
     }
     passive = {
@@ -99,9 +100,10 @@ module "container_app" {
       key_vault_secrets = var.key_vault_secrets
 
       custom_domain = {
-        fqdn                     = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
-        zone_name                = "${local.env_map[var.env]}.platform.hmcts.net"
-        zone_resource_group_name = "reformMgmtRG"
+        fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "csds-${var.env}-cert"
       }
     }
   }
