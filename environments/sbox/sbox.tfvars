@@ -51,4 +51,4 @@ key_vault_secrets = [
   }
 ]
 
-environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-sandbox-platform-hmcts-net/7233a4b84c154736a39a64bee70f4a6c"
+environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-sandbox-platform-hmcts-net"
