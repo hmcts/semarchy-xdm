@@ -108,3 +108,8 @@ variable "key_vault_secrets" {
   }))
   default = []
 }
+
+variable "environment_certificate_key_vault_secret_id" {
+  description = "Key Vault Secret ID for the environment certificate"
+  type        = string
+}

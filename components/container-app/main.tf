@@ -46,6 +46,10 @@ module "container_app" {
 
   internal_load_balancer_enabled = true
 
+  environment_certificates = {
+    "csds-${var.env}-cert" = var.environment_certificate_key_vault_secret_id
+  }
+
   container_apps = {
     active = {
       containers = {
