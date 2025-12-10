@@ -12,4 +12,8 @@ data "azurerm_subscription" "current" {}
 
 locals {
   dns_sub_id = "ed302caf-ec27-4c64-a05e-85731c3ce90e"
+  env_map = {
+    "sbox" = "sandbox"
+    "stg"  = "staging"
+  }
 }

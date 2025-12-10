@@ -69,8 +69,8 @@ module "container_app" {
       key_vault_secrets = var.key_vault_secrets
 
       custom_domain = {
-        fqdn                     = "csds-active.${var.env}.platform.hmcts.net"
-        zone_name                = "${var.env}.platform.hmcts.net"
+        fqdn                     = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name = "reformMgmtRG"
       }
     }
@@ -95,8 +95,8 @@ module "container_app" {
       key_vault_secrets = var.key_vault_secrets
 
       custom_domain = {
-        fqdn                     = "csds-passive.${var.env}.platform.hmcts.net"
-        zone_name                = "${var.env}.platform.hmcts.net"
+        fqdn                     = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name = "reformMgmtRG"
       }
     }
