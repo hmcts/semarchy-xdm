@@ -113,6 +113,7 @@ module "container_app" {
           image  = "nginx:latest"
           cpu    = 0.5
           memory = "1Gi"
+          env    = []
         }
       }
 
