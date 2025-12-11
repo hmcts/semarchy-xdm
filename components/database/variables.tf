@@ -25,3 +25,19 @@ variable "resource_group_location" {
   type        = string
   default     = "uksouth"
 }
+
+variable "postgres_version" {
+  description = "The version of PostgreSQL to use"
+  type        = string
+  default     = "17"
+}
+
+variable "trigger_password_reset" {
+  type    = string
+  default = ""
+}
+
+variable "db_admin_group" {
+  description = "The name of the Azure AD group to be assigned as DB admin"
+  type        = string
+}
