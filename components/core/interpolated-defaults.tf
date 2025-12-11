@@ -22,47 +22,15 @@ locals {
   ]
 
   key_vault_access_policies = {
-    "${data.azurerm_client_config.current.object_id}" = {
-      certificate_permissions = ["Get", "List", "ListIssuers", "GetIssuers"]
-      key_permissions = [
-        "Get",
-        "List",
-        "Update",
-        "Create",
-        "Delete",
-        "GetRotationPolicy",
-        "Recover",
-        "Restore",
-        "Purge"
-      ]
-      storage_permissions = []
-      secret_permissions = [
-        "Get",
-        "List",
-        "Set",
-        "Delete",
-        "Purge",
-        "Recover",
-        "Restore",
-        "Purge"
-      ]
-    }
     "${data.azuread_group.admin_group.object_id}" = {
       certificate_permissions = []
       key_permissions = [
-        "Get",
         "List",
-        "Update",
-        "Create",
-        "Delete"
       ]
       storage_permissions = []
       secret_permissions = [
-        "Get",
         "List",
         "Set",
-        "Delete",
-        "Purge"
       ]
     }
     // Allow DTS Platform Operations
