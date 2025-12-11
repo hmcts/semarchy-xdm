@@ -13,3 +13,8 @@ variable "product" {
   type        = string
   default     = "csds"
 }
+
+variable "builtFrom" {
+  type    = string
+  default = "hmcts/semarchy-xdm"
+}

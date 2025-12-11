@@ -1,8 +1,6 @@
 module "shared_integration_datafactory" {
   source = "github.com/hmcts/terraform-module-azure-datafactory?ref=main"
 
-  depends_on = [module.vnet_peer_hub]
-
   env                              = var.env
   product                          = var.product
   component                        = "csds-datafactory"
