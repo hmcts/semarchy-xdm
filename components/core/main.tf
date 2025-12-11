@@ -8,7 +8,7 @@ resource "azurerm_role_assignment" "this" {
   for_each             = local.core_roles
   scope                = azurerm_resource_group.core.id
   role_definition_name = each.value
-  principal_id         = data.azuread_group.adming_group.object_id
+  principal_id         = data.azuread_group.admin_group.object_id
 }
 
 resource "azurerm_log_analytics_workspace" "main" {
