@@ -23,32 +23,27 @@ ingress_target_port      = 8080
 
 container_env_vars = [
   { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver" },
-  { name = "XDM_REPOSITORY_URL", secret_name = "semarchy-host" },
-  { name = "XDM_REPOSITORY_USERNAME", secret_name = "semarchy-admin-user" },
+  { name = "XDM_REPOSITORY_URL", secret_name = "postgresql-host" },
+  { name = "XDM_REPOSITORY_USERNAME", secret_name = "postgresql-admin-username" },
   { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" },
   //{ name = "SEMARCHY_SETUP_TOKEN", secret_name = "setup-token" }
 ]
 
 key_vault_secrets = [
   {
-    name                  = "semarchy-host"
+    name                  = "postgresql-host"
     key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
-    key_vault_secret_name = "semarchy-host"
-  },
-  {
-    name                  = "semarchy-database"
-    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
-    key_vault_secret_name = "semarchy-database"
-  },
-  {
-    name                  = "semarchy-admin-user"
-    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
-    key_vault_secret_name = "semarchy-admin-user"
+    key_vault_secret_name = "postgresql-host"
   },
   {
     name                  = "postgresql-admin-password"
     key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
     key_vault_secret_name = "postgresql-admin-password"
+  },
+  {
+    name                  = "postgresql-admin-username"
+    key_vault_id          = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/semarchy-xdm-core-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-sbox"
+    key_vault_secret_name = "postgresql-admin-username"
   },
   // Setup token for Semarchy XDM
   //{
