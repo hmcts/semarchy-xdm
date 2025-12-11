@@ -24,7 +24,7 @@ module "postgresql" {
 
   pgsql_databases = [
     {
-      name : "sdrs"
+      name : "semarchy"
     }
   ]
 
@@ -63,15 +63,20 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "db
 
 resource "azurerm_key_vault_secret" "postgresql_admin_username" {
   name         = "postgresql-admin-username"
-  value        = module.postgresql.pgsql_admin_username
+  value        = module.postgresql.user_name
   key_vault_id = data.azurerm_key_vault.csds.id
 
 }
 
 resource "azurerm_key_vault_secret" "postgresql_admin_password" {
   name         = "postgresql-admin-password"
-  value        = random_password.postgresql_admin.result
+  value        = module.postgresql.postgresql_password
+  key_vault_id = data.azurerm_key_vault.csds.id
+}
+
+resource "azurerm_key_vault_secret" "postgresql_host" {
+  name         = "postgresql-host"
+  value        = "jdbc:postgresql://${module.postgresql.host_name}:5432/semarchy"
   key_vault_id = data.azurerm_key_vault.csds.id
 
-  depends_on = [random_password.postgresql_admin]
 }
