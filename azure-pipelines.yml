@@ -43,6 +43,13 @@ parameters:
         dependsOn:
           - "sandbox_core"
           - "sandbox_database"
+      - deployment: "sandbox_datafactory"
+        environment: "sbox"
+        component: "datafactory"
+        service_connection: "DCD-CFTAPPS-SBOX"
+        dependsOn:
+          - "sandbox_core"
+          - "sandbox_database"
 
 variables:
   - name: timeoutInMinutes
