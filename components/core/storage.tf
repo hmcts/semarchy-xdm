@@ -7,7 +7,7 @@ module "storage" {
   account_kind               = var.storage_account_kind
   account_replication_type   = var.storage_replication_type
   common_tags                = module.ctags.common_tags
-  private_endpoint_subnet_id = module.networking.subnet_ids["csds-general"]
+  private_endpoint_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-general-${var.env}"
   sa_subnets                 = local.cft_ptl_subnet_ids
 }
 
