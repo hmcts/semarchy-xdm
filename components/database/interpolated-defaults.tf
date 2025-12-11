@@ -12,6 +12,8 @@ locals {
   dts_dns_resource_group     = "core-infra-intsvc-rg"
 }
 
+data "azurerm_client_config" "current" {}
+
 data "azurerm_resource_group" "core" {
   name = var.resource_group_name
 }
