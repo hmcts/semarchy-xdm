@@ -12,7 +12,7 @@ next_hop_ip_address     = "10.10.200.36"
 # Container App specific
 active_container_image   = "semarchy/xdm:2025.1.9"
 passive_container_image  = "semarchy/xdm:2025.1.9-passive"
-resource_group_name      = "semarchy-xdm-core-rg"
+resource_group_name      = "csds-semarchy-xdm-sbox-rg"
 passive_min_replicas     = 1
 passive_max_replicas     = 2
 container_cpu            = 2.0

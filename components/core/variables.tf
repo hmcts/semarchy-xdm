@@ -1,7 +1,6 @@
 variable "resource_group_name" {
   description = "The name of the Resource Group"
   type        = string
-  default     = "semarchy-xdm-core-rg"
 }
 
 variable "resource_group_location" {
