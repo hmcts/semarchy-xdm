@@ -41,6 +41,6 @@ data "azurerm_private_dns_zone" "postgresql" {
 }
 
 data "azuread_group" "db_admin" {
-  display_name     = var.db_admin_group
+  display_name     = var.admin_group
   security_enabled = true
 }

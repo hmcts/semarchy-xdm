@@ -36,7 +36,7 @@ variable "trigger_password_reset" {
   default = ""
 }
 
-variable "db_admin_group" {
+variable "admin_group" {
   description = "The name of the Azure AD group to be assigned as DB admin"
   type        = string
 }

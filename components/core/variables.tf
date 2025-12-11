@@ -88,3 +88,8 @@ variable "hub_subscription_id" {
   description = "The subscription ID containing the HUB virtual network."
   type        = string
 }
+
+variable "admin_group" {
+  description = "The name of the Azure AD group to be assigned as DB admin"
+  type        = string
+}
