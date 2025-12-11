@@ -1,7 +1,6 @@
 variable "resource_group_name" {
   description = "The name of the Resource Group"
   type        = string
-  default     = "semarchy-xdm-core-rg"
 }
 
 variable "resource_group_location" {
@@ -87,5 +86,10 @@ variable "hub_resource_group_name" {
 
 variable "hub_subscription_id" {
   description = "The subscription ID containing the HUB virtual network."
+  type        = string
+}
+
+variable "admin_group" {
+  description = "The name of the Azure AD group to be assigned as DB admin"
   type        = string
 }

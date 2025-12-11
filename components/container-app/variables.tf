@@ -37,7 +37,12 @@ variable "resource_group_location" {
   default     = "uksouth"
 }
 
-variable "container_image" {
+variable "active_container_image" {
+  description = "The container image to deploy"
+  type        = string
+}
+
+variable "passive_container_image" {
   description = "The container image to deploy"
   type        = string
 }
@@ -54,13 +59,13 @@ variable "container_memory" {
   default     = "1Gi"
 }
 
-variable "min_replicas" {
+variable "passive_min_replicas" {
   description = "Minimum number of replicas"
   type        = number
   default     = 1
 }
 
-variable "max_replicas" {
+variable "passive_max_replicas" {
   description = "Maximum number of replicas"
   type        = number
   default     = 3
@@ -102,4 +107,13 @@ variable "key_vault_secrets" {
     key_vault_secret_name = string
   }))
   default = []
+}
+
+variable "active_environment_certificate_key_vault_secret_id" {
+  description = "Key Vault Secret ID for the environment certificate"
+  type        = string
+}
+variable "passive_environment_certificate_key_vault_secret_id" {
+  description = "Key Vault Secret ID for the environment certificate"
+  type        = string
 }

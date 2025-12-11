@@ -5,16 +5,14 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "= 4.55.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
   backend "azurerm" {}
 }
 
 provider "azurerm" {
   features {}
-}
-
-provider "azurerm" {
-  alias = "dns"
-  features {}
-  subscription_id = local.dns_sub_id
 }

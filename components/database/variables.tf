@@ -1,7 +1,6 @@
 variable "resource_group_name" {
   description = "The name of the Resource Group"
   type        = string
-  default     = "semarchy-xdm-core-rg"
 }
 
 variable "env" {
@@ -24,4 +23,20 @@ variable "resource_group_location" {
   description = "The Azure region where the Resource Group will be created"
   type        = string
   default     = "uksouth"
+}
+
+variable "postgres_version" {
+  description = "The version of PostgreSQL to use"
+  type        = string
+  default     = "17"
+}
+
+variable "trigger_password_reset" {
+  type    = string
+  default = ""
+}
+
+variable "admin_group" {
+  description = "The name of the Azure AD group to be assigned as DB admin"
+  type        = string
 }

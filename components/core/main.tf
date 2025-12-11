@@ -4,6 +4,13 @@ resource "azurerm_resource_group" "core" {
   tags     = module.ctags.common_tags
 }
 
+resource "azurerm_role_assignment" "this" {
+  for_each             = toset(local.core_roles)
+  scope                = azurerm_resource_group.core.id
+  role_definition_name = each.value
+  principal_id         = data.azuread_group.admin_group.object_id
+}
+
 resource "azurerm_log_analytics_workspace" "main" {
   name                = "csds-law-${var.env}"
   location            = azurerm_resource_group.core.location
@@ -24,4 +31,16 @@ module "key_vault" {
   product             = var.product
   product_group_name  = "DTS Semarchy XDM sbox"
   common_tags         = module.ctags.common_tags
+}
+
+resource "azurerm_key_vault_access_policy" "this" {
+  for_each     = local.key_vault_access_policies
+  key_vault_id = module.key_vault.key_vault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = each.key
+
+  certificate_permissions = each.value.certificate_permissions
+  key_permissions         = each.value.key_permissions
+  storage_permissions     = each.value.storage_permissions
+  secret_permissions      = each.value.secret_permissions
 }

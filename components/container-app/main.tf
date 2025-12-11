@@ -26,6 +26,11 @@ data "azurerm_log_analytics_workspace" "main" {
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
+  providers = {
+    azurerm     = azurerm
+    azurerm.dns = azurerm.dns
+  }
+
   product   = var.product
   component = var.component
   env       = var.env
@@ -41,24 +46,68 @@ module "container_app" {
 
   internal_load_balancer_enabled = true
 
-  ingress_enabled          = var.ingress_enabled
-  ingress_external_enabled = var.ingress_external_enabled
-  ingress_target_port      = var.ingress_target_port
-  ingress_transport        = "auto"
-
-  containers = {
-    (var.component) = {
-      image  = var.container_image
-      cpu    = var.container_cpu
-      memory = var.container_memory
-      env    = var.container_env_vars
-    }
+  environment_certificates = {
+    "csds-active-${var.env}-cert"  = var.active_environment_certificate_key_vault_secret_id
+    "csds-passive-${var.env}-cert" = var.passive_environment_certificate_key_vault_secret_id
   }
 
-  min_replicas = var.min_replicas
-  max_replicas = var.max_replicas
+  container_apps = {
+    active = {
+      containers = {
+        "${var.component}-active" = {
+          image  = var.active_container_image
+          cpu    = var.container_cpu
+          memory = var.container_memory
+          env    = var.container_env_vars
+        }
+      }
 
-  key_vault_secrets = var.key_vault_secrets
+      ingress_enabled          = var.ingress_enabled
+      ingress_external_enabled = var.ingress_external_enabled
+      ingress_target_port      = var.ingress_target_port
+      ingress_transport        = "auto"
+
+      // Only one instance of the "active" component should run.
+      min_replicas = 1
+      max_replicas = 1
+
+      key_vault_secrets = var.key_vault_secrets
+
+      custom_domain = {
+        fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "csds-active-${var.env}-cert"
+      }
+    }
+    passive = {
+      containers = {
+        "${var.component}-passive" = {
+          image  = var.passive_container_image
+          cpu    = var.container_cpu
+          memory = var.container_memory
+          env    = var.container_env_vars
+        }
+      }
+
+      ingress_enabled          = var.ingress_enabled
+      ingress_external_enabled = var.ingress_external_enabled
+      ingress_target_port      = var.ingress_target_port
+      ingress_transport        = "auto"
+
+      min_replicas = var.passive_min_replicas
+      max_replicas = var.passive_max_replicas
+
+      key_vault_secrets = var.key_vault_secrets
+
+      custom_domain = {
+        fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "csds-passive-${var.env}-cert"
+      }
+    }
+  }
 }
 
 resource "azurerm_key_vault_access_policy" "container_app" {
