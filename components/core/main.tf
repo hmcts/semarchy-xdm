@@ -5,7 +5,7 @@ resource "azurerm_resource_group" "core" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  for_each             = local.core_roles
+  for_each             = toset(local.core_roles)
   scope                = azurerm_resource_group.core.id
   role_definition_name = each.value
   principal_id         = data.azuread_group.admin_group.object_id
