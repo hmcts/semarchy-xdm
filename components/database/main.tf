@@ -51,7 +51,7 @@ module "postgresql" {
 }
 
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "db_admin" {
-  server_name         = "sdrs-postgresql-${var.env}"
+  server_name         = "csds-postgresql-${var.env}"
   resource_group_name = var.resource_group_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   object_id           = data.azuread_group.db_admin.object_id
