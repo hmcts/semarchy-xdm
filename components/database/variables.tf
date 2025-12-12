@@ -31,6 +31,12 @@ variable "postgres_version" {
   default     = "17"
 }
 
+variable "postgres_sku" {
+  description = "The SKU for the PostgreSQL Flexible Server"
+  type        = string
+  default     = "Standard_D8ds_v5"
+}
+
 variable "trigger_password_reset" {
   type    = string
   default = ""

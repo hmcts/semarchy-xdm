@@ -39,7 +39,7 @@ module "postgresql" {
     }
   ]
 
-
+  pgsql_sku                     = var.postgres_sku
   pgsql_version                 = var.postgres_version
   pgsql_delegated_subnet_id     = data.azurerm_subnet.postgresql.id
   admin_user_object_id          = data.azurerm_client_config.current.object_id

@@ -93,3 +93,15 @@ variable "admin_group" {
   description = "The name of the Azure AD group to be assigned as DB admin"
   type        = string
 }
+
+variable "function_app_sku" {
+  description = "The SKU for the App Service Plan"
+  type        = string
+  default     = "Y1"
+}
+
+variable "python_version" {
+  description = "The Python version for the Function App"
+  type        = string
+  default     = "3.13"
+}

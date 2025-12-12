@@ -50,13 +50,13 @@ variable "passive_container_image" {
 variable "container_cpu" {
   description = "CPU allocation for the container"
   type        = number
-  default     = 0.5
+  default     = 4
 }
 
 variable "container_memory" {
   description = "Memory allocation for the container"
   type        = string
-  default     = "1Gi"
+  default     = "16Gi"
 }
 
 variable "passive_min_replicas" {
