@@ -25,6 +25,11 @@ variable "container_apps_subnet_address" {
   type        = string
 }
 
+variable "functions_subnet_address" {
+  description = "The address prefix for the Functions subnet"
+  type        = string
+}
+
 variable "postgresql_subnet_address" {
   description = "The address prefix for the PostgreSQL Flexible Servers subnet"
   type        = string

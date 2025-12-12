@@ -24,16 +24,21 @@ resource "azurerm_linux_function_app" "this" {
     vnet_route_all_enabled = true
   }
 
-  virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-container-apps-${var.env}"
+  virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-functions-${var.env}"
 
   app_settings = {
-    "FUNCTIONS_WORKER_RUNTIME" = "python"
-    "WEBSITE_VNET_ROUTE_ALL"   = "1"
-    "WEBSITE_CONTENTOVERVNET"  = "1"
-    "WEBSITE_CONTENTSHARE"     = azurerm_storage_share.this.name
+    "FUNCTIONS_WORKER_RUNTIME"                 = "python"
+    "FUNCTIONS_EXTENSION_VERSION"              = "~4"
+    "WEBSITE_VNET_ROUTE_ALL"                   = "1"
+    "WEBSITE_CONTENTOVERVNET"                  = "1"
+    "WEBSITE_CONTENTSHARE"                     = azurerm_storage_share.this.name
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" = module.storage.storageaccount_primary_connection_string
+    "AzureWebJobsStorage"                      = module.storage.storageaccount_primary_connection_string
   }
 
   identity {
     type = "SystemAssigned"
   }
+
+  depends_on = [module.networking]
 }

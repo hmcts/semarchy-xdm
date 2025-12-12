@@ -21,6 +21,15 @@ module "networking" {
             }
           }
         }
+        functions = {
+          address_prefixes = [var.functions_subnet_address]
+          delegations = {
+            functionapps = {
+              service_name = "Microsoft.Web/serverFarms"
+              actions      = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+            }
+          }
+        }
         general = {
           address_prefixes = [var.general_purpose_subnet_address]
         }
