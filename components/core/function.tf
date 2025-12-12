@@ -24,7 +24,7 @@ resource "azurerm_linux_function_app" "this" {
     vnet_route_all_enabled = true
   }
 
-  virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-general-${var.env}"
+  virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-container-apps-${var.env}"
 
   app_settings = {
     "FUNCTIONS_WORKER_RUNTIME" = "python"
