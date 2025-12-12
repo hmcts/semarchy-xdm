@@ -97,7 +97,7 @@ variable "admin_group" {
 variable "function_app_sku" {
   description = "The SKU for the App Service Plan"
   type        = string
-  default     = "Y1"
+  default     = "FC1"
 }
 
 variable "python_version" {
