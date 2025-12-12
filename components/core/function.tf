@@ -30,6 +30,7 @@ resource "azurerm_linux_function_app" "this" {
     "FUNCTIONS_WORKER_RUNTIME" = "python"
     "WEBSITE_VNET_ROUTE_ALL"   = "1"
     "WEBSITE_CONTENTOVERVNET"  = "1"
+    "WEBSITE_CONTENTSHARE"     = azurerm_storage_share.this.name
   }
 
   identity {
