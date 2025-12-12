@@ -95,9 +95,9 @@ variable "admin_group" {
 }
 
 variable "function_app_sku" {
-  description = "The SKU for the App Service Plan"
+  description = "The SKU for the App Service Plan (use EP1, EP2, or EP3 for VNet integration)"
   type        = string
-  default     = "FC1"
+  default     = "EP1"
 }
 
 variable "python_version" {
