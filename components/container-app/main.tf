@@ -116,6 +116,4 @@ resource "azurerm_key_vault_access_policy" "container_app" {
   object_id    = module.container_app.container_app_identity_principal_id
 
   secret_permissions = ["Get", "List"]
-
-  depends_on = [module.container_app]
 }
