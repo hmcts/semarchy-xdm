@@ -17,10 +17,6 @@ module "shared_integration_datafactory" {
   global_parameters = {}
 
   managed_private_endpoints = {
-    keyvault = {
-      resource_id      = data.azurerm_key_vault.this.id
-      subresource_name = "vault"
-    }
     storage-blob = {
       resource_id      = data.azurerm_storage_account.this.id
       subresource_name = "blob"
