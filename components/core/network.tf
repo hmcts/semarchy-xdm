@@ -26,7 +26,7 @@ module "networking" {
           delegations = {
             functionapps = {
               service_name = "Microsoft.Web/serverFarms"
-              actions      = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+              actions      = ["Microsoft.Network/virtualNetworks/subnets/action"]
             }
           }
         }
