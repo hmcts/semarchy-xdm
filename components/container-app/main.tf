@@ -1,28 +1,3 @@
-data "azurerm_resource_group" "core" {
-  name = var.resource_group_name
-}
-
-data "azurerm_virtual_network" "csds" {
-  name                = "csds-network-csds-${var.env}"
-  resource_group_name = var.resource_group_name
-}
-
-data "azurerm_subnet" "container_apps" {
-  name                 = "csds-network-container-apps-${var.env}"
-  virtual_network_name = data.azurerm_virtual_network.csds.name
-  resource_group_name  = var.resource_group_name
-}
-
-data "azurerm_key_vault" "csds" {
-  name                = "csds-keyvault-${var.env}"
-  resource_group_name = var.resource_group_name
-}
-
-data "azurerm_log_analytics_workspace" "main" {
-  name                = "csds-law-${var.env}"
-  resource_group_name = var.resource_group_name
-}
-
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
@@ -58,7 +33,7 @@ module "container_app" {
           image  = var.active_container_image
           cpu    = var.container_cpu
           memory = var.container_memory
-          env    = var.container_env_vars
+          env    = local.env_vars
         }
       }
 
@@ -71,7 +46,7 @@ module "container_app" {
       min_replicas = 1
       max_replicas = 1
 
-      key_vault_secrets = var.key_vault_secrets
+      key_vault_secrets = local.secrets
 
       custom_domain = {
         fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
@@ -86,7 +61,7 @@ module "container_app" {
           image  = var.passive_container_image
           cpu    = var.container_cpu
           memory = var.container_memory
-          env    = var.container_env_vars
+          env    = local.env_vars
         }
       }
 
@@ -98,7 +73,7 @@ module "container_app" {
       min_replicas = var.passive_min_replicas
       max_replicas = var.passive_max_replicas
 
-      key_vault_secrets = var.key_vault_secrets
+      key_vault_secrets = local.secrets
 
       custom_domain = {
         fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"

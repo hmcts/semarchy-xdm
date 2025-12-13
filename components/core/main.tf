@@ -44,3 +44,15 @@ resource "azurerm_key_vault_access_policy" "this" {
   storage_permissions     = each.value.storage_permissions
   secret_permissions      = each.value.secret_permissions
 }
+
+resource "random_password" "token" {
+  count  = var.generate_setup_token ? 1 : 0
+  length = 32
+}
+
+resource "azurerm_key_vault_secret" "token" {
+  count        = var.generate_setup_token ? 1 : 0
+  name         = "semarchy-setup-token"
+  value        = random_password.token[0].result
+  key_vault_id = module.key_vault.key_vault_id
+}

@@ -78,9 +78,9 @@ variable "ingress_enabled" {
 }
 
 variable "ingress_external_enabled" {
-  description = "Enable external ingress"
+  description = "Enable external ingress, external to the app environment. I.E traffic from the VNET."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "ingress_target_port" {
@@ -116,4 +116,10 @@ variable "active_environment_certificate_key_vault_secret_id" {
 variable "passive_environment_certificate_key_vault_secret_id" {
   description = "Key Vault Secret ID for the environment certificate"
   type        = string
+}
+
+variable "generate_setup_token" {
+  description = "Whether to generate a setup token for Semarchy XDM"
+  type        = bool
+  default     = false
 }

@@ -110,3 +110,9 @@ variable "python_version" {
   type        = string
   default     = "3.13"
 }
+
+variable "generate_setup_token" {
+  description = "Whether to generate a setup token for Semarchy XDM"
+  type        = bool
+  default     = false
+}
