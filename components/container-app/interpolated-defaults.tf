@@ -47,14 +47,17 @@ locals {
   default_secrets = [
     {
       name                  = "postgresql-host"
+      key_vault_id          = local.default_kv_id
       key_vault_secret_name = "postgresql-host"
     },
     {
       name                  = "postgresql-admin-password"
+      key_vault_id          = local.default_kv_id
       key_vault_secret_name = "postgresql-admin-password"
     },
     {
       name                  = "postgresql-admin-username"
+      key_vault_id          = local.default_kv_id
       key_vault_secret_name = "postgresql-admin-username"
     }
   ]
@@ -62,6 +65,7 @@ locals {
   secrets = concat(var.key_vault_secrets, local.default_secrets, var.generate_setup_token ? [
     {
       name                  = "semarchy-setup-token"
+      key_vault_id          = local.default_kv_id
       key_vault_secret_name = "semarchy-setup-token"
     }
   ] : [])

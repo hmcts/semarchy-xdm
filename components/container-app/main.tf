@@ -21,6 +21,12 @@ module "container_app" {
 
   internal_load_balancer_enabled = true
 
+  workload_profiles = {
+    "dedicated" = {
+      workload_profile_type = "D4"
+    }
+  }
+
   environment_certificates = {
     "csds-active-${var.env}-cert"  = var.active_environment_certificate_key_vault_secret_id
     "csds-passive-${var.env}-cert" = var.passive_environment_certificate_key_vault_secret_id
@@ -28,6 +34,7 @@ module "container_app" {
 
   container_apps = {
     active = {
+      workload_profile_name = "dedicated"
       containers = {
         "${var.component}-active" = {
           image  = var.active_container_image
@@ -56,6 +63,7 @@ module "container_app" {
       }
     }
     passive = {
+      workload_profile_name = "dedicated"
       containers = {
         "${var.component}-passive" = {
           image  = var.passive_container_image
