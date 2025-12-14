@@ -11,6 +11,28 @@ module "storage" {
   sa_subnets                 = local.cft_ptl_subnet_ids
 }
 
+resource "azurerm_private_endpoint" "this" {
+  for_each            = toset(["file", "queue"])
+  name                = "csds${var.env}storage-${each.key}-pe"
+  resource_group_name = azurerm_resource_group.core.name
+  location            = azurerm_resource_group.core.location
+  subnet_id           = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-general-${var.env}"
+
+  private_service_connection {
+    name                           = "csds${var.env}storage"
+    is_manual_connection           = false
+    private_connection_resource_id = module.storage.storageaccount_id
+    subresource_names              = [each.key]
+  }
+
+  private_dns_zone_group {
+    name                 = "endpoint-dnszonegroup"
+    private_dns_zone_ids = ["/subscriptions/1baf5470-1c3e-40d3-a6f7-74bfbce4b348/resourceGroups/core-infra-intsvc-rg/providers/Microsoft.Network/privateDnsZones/privatelink.${each.key}.core.windows.net"]
+  }
+
+  tags = module.ctags.common_tags
+}
+
 resource "azurerm_storage_queue" "this" {
   name               = "csds-queue-${var.env}"
   storage_account_id = module.storage.storageaccount_id
