@@ -49,7 +49,7 @@ module "networking" {
 
   route_tables = {
     rt = {
-      subnets = ["csds-container-apps", "csds-general", "csds-postgres"]
+      subnets = ["csds-container-apps", "csds-general", "csds-postgres", "csds-functions"]
       routes = {
         default = {
           address_prefix         = "0.0.0.0/0"
@@ -62,7 +62,7 @@ module "networking" {
 
   network_security_groups = {
     nsg = {
-      subnets = ["csds-container-apps", "csds-general", "csds-postgres"]
+      subnets = ["csds-container-apps", "csds-general", "csds-postgres", "csds-functions"]
       rules = {
         allow_vnet_inbound = {
           priority                   = 4010
