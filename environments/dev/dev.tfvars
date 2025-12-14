@@ -10,7 +10,11 @@ hub_resource_group_name = "hmcts-hub-nonprodi"
 hub_subscription_id     = "fb084706-583f-4c9a-bdab-949aac66ba5c"
 next_hop_ip_address     = "10.11.72.36"
 
-resource_group_name = "csds-semarchy-xdm-dev-rg"
+resource_group_name     = "csds-semarchy-xdm-dev-rg"
+active_container_image  = "semarchy/xdm:2025.1.9"
+passive_container_image = "semarchy/xdm:2025.1.9-passive"
+passive_min_replicas    = 1
+passive_max_replicas    = 2
 
 generate_setup_token = true
 
