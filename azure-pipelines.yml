@@ -50,6 +50,21 @@ parameters:
         dependsOn:
           - "sandbox_core"
           - "sandbox_database"
+      - deployment: "dev_core"
+        environment: "dev"
+        component: "core"
+        service_connection: "DCD-CFTAPPS-DEV"
+        dependsOn: "sandbox_core"
+      - deployment: "stg_core"
+        environment: "stg"
+        component: "core"
+        service_connection: "DCD-CFTAPPS-STG"
+        dependsOn: "dev_core"
+      - deployment: "prod_core"
+        environment: "prod"
+        component: "core"
+        service_connection: "DCD-CFTAPPS-PROD"
+        dependsOn: "stg_core"
 
 variables:
   - name: timeoutInMinutes

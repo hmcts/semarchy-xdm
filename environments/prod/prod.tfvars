@@ -2,6 +2,16 @@ env                            = "prod"
 vnet_address_space             = ["10.24.236.0/26"]
 container_apps_subnet_address  = "10.24.236.0/27"
 general_purpose_subnet_address = "10.24.236.32/28"
-postgresql_subnet_address      = "10.24.236.48/28"
+postgresql_subnet_address      = "10.24.236.48/29"
+functions_subnet_address       = "10.24.236.56/29"
+
+hub_vnet_name           = "hmcts-hub-prod-int"
+hub_resource_group_name = "hmcts-hub-prod-int"
+hub_subscription_id     = "0978315c-75fe-4ada-9d11-1eb5e0e0b214"
+next_hop_ip_address     = "10.11.8.36"
+
+resource_group_name = "csds-semarchy-xdm-prod-rg"
+
+generate_setup_token = true
 
 admin_group = "DTS Crime Standing Data Service Admin (env:prod)"
