@@ -55,16 +55,37 @@ parameters:
         component: "core"
         service_connection: "DCD-CFTAPPS-DEV"
         dependsOn: "sandbox_core"
+      - deployment: "dev_database"
+        environment: "dev"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-DEV"
+        dependsOn: 
+          - "dev_core"
+          - "sandbox_database"
       - deployment: "stg_core"
         environment: "stg"
         component: "core"
         service_connection: "DCD-CFTAPPS-STG"
         dependsOn: "dev_core"
+      - deployment: "stg_database"
+        environment: "stg"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-STG"
+        dependsOn: 
+          - "stg_core"
+          - "dev_database"
       - deployment: "prod_core"
         environment: "prod"
         component: "core"
         service_connection: "DCD-CFTAPPS-PROD"
         dependsOn: "stg_core"
+      - deployment: "prod_database"
+        environment: "prod"
+        component: "database"
+        service_connection: "DCD-CFTAPPS-PROD"
+        dependsOn: 
+          - "prod_core"
+          - "stg_database"
 
 variables:
   - name: timeoutInMinutes

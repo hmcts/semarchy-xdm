@@ -55,4 +55,6 @@ resource "azurerm_key_vault_secret" "token" {
   name         = "semarchy-setup-token"
   value        = random_password.token[0].result
   key_vault_id = module.key_vault.key_vault_id
+
+  depends_on = [module.key_vault]
 }
