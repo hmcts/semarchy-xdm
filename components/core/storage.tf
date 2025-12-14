@@ -21,3 +21,9 @@ resource "azurerm_storage_share" "this" {
   storage_account_id = module.storage.storageaccount_id
   quota              = var.storage_share_quota
 }
+
+resource "azurerm_storage_share" "functions" {
+  name               = "csds-func-${var.env}"
+  storage_account_id = module.storage.storageaccount_id
+  quota              = "64"
+}

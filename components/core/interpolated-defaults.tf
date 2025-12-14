@@ -11,6 +11,15 @@ data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "current" {}
 
 locals {
+  private_dns_sub_id = "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
+
+  private_dns_zone_names = [
+    "privatelink.postgres.database.azure.com",
+    "privatelink.blob.core.windows.net",
+    "privatelink.queue.core.windows.net",
+    "privatelink.file.core.windows.net",
+  ]
+
   cft_ptl_subnet_ids = [
     "/subscriptions/1baf5470-1c3e-40d3-a6f7-74bfbce4b348/resourceGroups/cft-ptl-network-rg/providers/Microsoft.Network/virtualNetworks/cft-ptl-vnet/subnets/aks-00",
     "/subscriptions/1baf5470-1c3e-40d3-a6f7-74bfbce4b348/resourceGroups/cft-ptl-network-rg/providers/Microsoft.Network/virtualNetworks/cft-ptl-vnet/subnets/aks-01",
@@ -73,4 +82,11 @@ locals {
 data "azuread_group" "admin_group" {
   display_name     = var.admin_group
   security_enabled = true
+}
+
+data "azurerm_private_dns_zone" "privatelink" {
+  for_each            = toset(local.private_dns_zone_names)
+  name                = each.key
+  resource_group_name = "core-infra-intsvc-rg"
+  provider            = azurerm.private_dns
 }

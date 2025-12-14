@@ -22,7 +22,8 @@ module "networking" {
           }
         }
         functions = {
-          address_prefixes = [var.functions_subnet_address]
+          address_prefixes  = [var.functions_subnet_address]
+          service_endpoints = ["Microsoft.Storage"]
           delegations = {
             functionapps = {
               service_name = "Microsoft.Web/serverFarms"
@@ -108,4 +109,13 @@ module "vnet_peer_hub" {
     azurerm.initiator = azurerm
     azurerm.target    = azurerm.hub
   }
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  for_each              = toset(local.private_dns_zone_names)
+  name                  = "csds-${var.env}"
+  resource_group_name   = data.azurerm_private_dns_zone.privatelink[each.key].resource_group_name
+  private_dns_zone_name = data.azurerm_private_dns_zone.privatelink[each.key].name
+  virtual_network_id    = module.networking.vnet_ids["csds"]
+  provider              = azurerm.private_dns
 }

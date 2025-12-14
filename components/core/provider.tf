@@ -18,3 +18,9 @@ provider "azurerm" {
   alias           = "hub"
   subscription_id = var.hub_subscription_id
 }
+
+provider "azurerm" {
+  alias = "private_dns"
+  features {}
+  subscription_id = local.private_dns_sub_id
+}

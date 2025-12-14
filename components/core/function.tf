@@ -31,9 +31,8 @@ resource "azurerm_linux_function_app" "this" {
     "FUNCTIONS_EXTENSION_VERSION"              = "~4"
     "WEBSITE_VNET_ROUTE_ALL"                   = "1"
     "WEBSITE_CONTENTOVERVNET"                  = "1"
-    "WEBSITE_CONTENTSHARE"                     = azurerm_storage_share.this.name
+    "WEBSITE_CONTENTSHARE"                     = azurerm_storage_share.functions.name
     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" = module.storage.storageaccount_primary_connection_string
-    "AzureWebJobsStorage"                      = module.storage.storageaccount_primary_connection_string
   }
 
   identity {
