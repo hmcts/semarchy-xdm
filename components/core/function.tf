@@ -40,4 +40,8 @@ resource "azurerm_linux_function_app" "this" {
   }
 
   depends_on = [module.networking]
+
+  lifecycle {
+    ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"]]
+  }
 }
