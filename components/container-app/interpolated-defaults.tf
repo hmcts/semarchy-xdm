@@ -38,6 +38,12 @@ data "azurerm_log_analytics_workspace" "main" {
 locals {
   dns_sub_id         = "ed302caf-ec27-4c64-a05e-85731c3ce90e"
   private_dns_sub_id = var.env == "sbox" ? "1497c3d7-ab6d-4bb7-8a10-b51d03189ee3" : "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
+
+  private_dns_zone = {
+    name                = "${local.env_map[var.env]}.platform.hmcts.net"
+    resource_group_name = "core-infra-intsvc-rg"
+  }
+
   env_map = {
     "sbox" = "sandbox"
     "stg"  = "staging"
