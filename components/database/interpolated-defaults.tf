@@ -36,7 +36,7 @@ data "azurerm_key_vault" "csds" {
 
 data "azurerm_private_dns_zone" "postgresql" {
   provider            = azurerm.dts_intsvc
-  name                = "privatelink.postgres.database.azure.com"
+  name                = "private.postgres.database.azure.com"
   resource_group_name = local.dts_dns_resource_group
 }
 

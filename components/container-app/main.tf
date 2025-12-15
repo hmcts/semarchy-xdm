@@ -2,8 +2,9 @@ module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
   providers = {
-    azurerm     = azurerm
-    azurerm.dns = azurerm.dns
+    azurerm             = azurerm
+    azurerm.dns         = azurerm.dns
+    azurerm.private_dns = azurerm.private_dns
   }
 
   product   = var.product
@@ -60,6 +61,7 @@ module "container_app" {
         zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name    = "reformMgmtRG"
         environment_certificate_key = "csds-active-${var.env}-cert"
+        private_dns_zone            = local.private_dns_zone
       }
     }
     passive = {
@@ -88,6 +90,7 @@ module "container_app" {
         zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
         zone_resource_group_name    = "reformMgmtRG"
         environment_certificate_key = "csds-passive-${var.env}-cert"
+        private_dns_zone            = local.private_dns_zone
       }
     }
   }
