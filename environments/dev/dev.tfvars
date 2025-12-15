@@ -18,4 +18,7 @@ passive_max_replicas    = 2
 
 generate_setup_token = true
 
+active_environment_certificate_key_vault_secret_id  = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-active-dev-platform-hmcts-net"
+passive_environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-dev-platform-hmcts-net"
+
 admin_group = "DTS Crime Standing Data Service Admin (env:dev)"

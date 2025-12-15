@@ -2,8 +2,9 @@ module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
   providers = {
-    azurerm     = azurerm
-    azurerm.dns = azurerm.dns
+    azurerm             = azurerm
+    azurerm.dns         = azurerm.dns
+    azurerm.private_dns = azurerm.private_dns
   }
 
   product   = var.product
