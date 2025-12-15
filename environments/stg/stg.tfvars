@@ -1,9 +1,9 @@
 env                            = "stg"
-vnet_address_space             = ["10.24.236.64/26"]
+vnet_address_space             = ["10.24.236.64/26", "10.224.236.64/28"]
 container_apps_subnet_address  = "10.24.236.64/27"
 general_purpose_subnet_address = "10.24.236.96/28"
-postgresql_subnet_address      = "10.24.236.112/29"
-functions_subnet_address       = "10.24.236.120/29"
+postgresql_subnet_address      = "10.24.236.112/28"
+functions_subnet_address       = "10.224.236.64/28"
 
 hub_vnet_name           = "hmcts-hub-prod-int"
 hub_resource_group_name = "hmcts-hub-prod-int"

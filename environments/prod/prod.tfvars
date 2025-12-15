@@ -1,9 +1,9 @@
 env                            = "prod"
-vnet_address_space             = ["10.24.236.0/26"]
+vnet_address_space             = ["10.24.236.0/26", "10.224.236.0/28"]
 container_apps_subnet_address  = "10.24.236.0/27"
 general_purpose_subnet_address = "10.24.236.32/28"
 postgresql_subnet_address      = "10.24.236.48/29"
-functions_subnet_address       = "10.24.236.56/29"
+functions_subnet_address       = "10.224.236.0/28"
 
 hub_vnet_name           = "hmcts-hub-prod-int"
 hub_resource_group_name = "hmcts-hub-prod-int"
