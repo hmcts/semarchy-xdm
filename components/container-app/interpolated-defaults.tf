@@ -47,6 +47,8 @@ locals {
   env_map = {
     "sbox" = "sandbox"
     "stg"  = "staging"
+    "dev"  = "dev"
+    "prod" = "prod"
   }
 
   default_kv_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.KeyVault/vaults/csds-keyvault-${var.env}"
