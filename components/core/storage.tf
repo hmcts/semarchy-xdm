@@ -9,6 +9,7 @@ module "storage" {
   common_tags                = module.ctags.common_tags
   private_endpoint_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-general-${var.env}"
   sa_subnets                 = local.cft_ptl_subnet_ids
+  default_action             = "Allow" # Whilst Valcon get Macbooks and can use the F5 VPN.
 }
 
 resource "azurerm_private_endpoint" "this" {
