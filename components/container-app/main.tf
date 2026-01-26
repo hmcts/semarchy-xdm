@@ -48,7 +48,9 @@ module "container_app" {
       ingress_enabled          = var.ingress_enabled
       ingress_external_enabled = var.ingress_external_enabled
       ingress_target_port      = var.ingress_target_port
-      ingress_transport        = "auto"
+      # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
+      ingress_allow_insecure_connections = true
+      ingress_transport                  = "auto"
 
       // Only one instance of the "active" component should run.
       min_replicas = 1
@@ -78,7 +80,9 @@ module "container_app" {
       ingress_enabled          = var.ingress_enabled
       ingress_external_enabled = var.ingress_external_enabled
       ingress_target_port      = var.ingress_target_port
-      ingress_transport        = "auto"
+      # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
+      ingress_allow_insecure_connections = true
+      ingress_transport                  = "auto"
 
       min_replicas = var.passive_min_replicas
       max_replicas = var.passive_max_replicas
