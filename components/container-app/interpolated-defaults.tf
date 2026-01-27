@@ -84,6 +84,12 @@ locals {
     { name = "XDM_REPOSITORY_URL", secret_name = "postgresql-host" },
     { name = "XDM_REPOSITORY_USERNAME", secret_name = "postgresql-admin-username" },
     { name = "XDM_REPOSITORY_PASSWORD", secret_name = "postgresql-admin-password" },
+    { name = "SPRING_DATASOURCE_HIKARI_MAXLIFETIME", value = "600000" },
+    { name = "SPRING_DATASOURCE_HIKARI_IDLETIMEOUT", value = "300000" },
+    { name = "SPRING_DATASOURCE_HIKARI_KEEPALIVETIME", value = "120000" },
+    { name = "SPRING_DATASOURCE_HIKARI_VALIDATIONTIMEOUT", value = "5000" },
+    { name = "SPRING_DATASOURCE_HIKARI_MINIMUMIDLE", value = "2" },
+    { name = "CATALINA_OPTS", value = "-DallowXForwardedHeaders=true" },
   ]
 
   env_vars = concat(var.container_env_vars, local.default_env_vars, var.generate_setup_token ? [
