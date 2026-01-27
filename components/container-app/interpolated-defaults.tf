@@ -71,13 +71,21 @@ locals {
     }
   ]
 
-  secrets = concat(var.key_vault_secrets, local.default_secrets, var.generate_setup_token ? [
+  user_secret_names = toset([for secret in var.key_vault_secrets : secret.name])
+
+  optional_secrets = var.generate_setup_token ? [
     {
       name                  = "semarchy-setup-token"
       key_vault_id          = local.default_kv_id
       key_vault_secret_name = "semarchy-setup-token"
     }
-  ] : [])
+  ] : []
+
+  secrets = concat(
+    var.key_vault_secrets,
+    [for secret in local.default_secrets : secret if !contains(local.user_secret_names, secret.name)],
+    [for secret in local.optional_secrets : secret if !contains(local.user_secret_names, secret.name)],
+  )
 
   default_env_vars = [
     { name = "XDM_REPOSITORY_DRIVER", value = "org.postgresql.Driver" },
@@ -92,7 +100,15 @@ locals {
     { name = "CATALINA_OPTS", value = "-DallowXForwardedHeaders=true" },
   ]
 
-  env_vars = concat(var.container_env_vars, local.default_env_vars, var.generate_setup_token ? [
+  user_env_var_names = toset([for env_var in var.container_env_vars : env_var.name])
+
+  optional_env_vars = var.generate_setup_token ? [
     { name = "SEMARCHY_SETUP_TOKEN", secret_name = "semarchy-setup-token" }
-  ] : [])
+  ] : []
+
+  env_vars = concat(
+    var.container_env_vars,
+    [for env_var in local.default_env_vars : env_var if !contains(local.user_env_var_names, env_var.name)],
+    [for env_var in local.optional_env_vars : env_var if !contains(local.user_env_var_names, env_var.name)],
+  )
 }
