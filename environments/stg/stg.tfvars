@@ -18,7 +18,9 @@ passive_max_replicas    = 2
 
 generate_setup_token = true
 
-active_environment_certificate_key_vault_secret_id  = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-active-staging-platform-hmcts-net"
-passive_environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-staging-platform-hmcts-net"
+active_environment_certificate_key_vault_secret_id              = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-active-staging-platform-hmcts-net"
+passive_environment_certificate_key_vault_secret_id             = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-staging-platform-hmcts-net"
+active_application_environment_certificate_key_vault_secret_id  = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-staging-apps-hmcts-net"
+passive_application_environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-staging-apps-hmcts-net"
 
 admin_group = "DTS Crime Standing Data Service Admin (env:stg)"

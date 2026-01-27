@@ -29,8 +29,10 @@ module "container_app" {
   }
 
   environment_certificates = {
-    "csds-active-${var.env}-cert"  = var.active_environment_certificate_key_vault_secret_id
-    "csds-passive-${var.env}-cert" = var.passive_environment_certificate_key_vault_secret_id
+    "csds-active-${var.env}-cert"       = var.active_environment_certificate_key_vault_secret_id
+    "csds-passive-${var.env}-cert"      = var.passive_environment_certificate_key_vault_secret_id
+    "csds-active-apps-${var.env}-cert"  = var.active_application_environment_certificate_key_vault_secret_id
+    "csds-passive-apps-${var.env}-cert" = var.passive_application_environment_certificate_key_vault_secret_id
   }
 
   container_apps = {
@@ -106,4 +108,20 @@ resource "azurerm_key_vault_access_policy" "container_app" {
   object_id    = module.container_app.container_app_identity_principal_id
 
   secret_permissions = ["Get", "List"]
+}
+
+resource "azurerm_container_app_custom_domain" "fd_domain_active" {
+  container_app_id                         = module.container_app.container_app_ids["active"]
+  name                                     = "csds.${local.env_map[var.env]}.apps.hmcts.net"
+  container_app_environment_certificate_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.App/managedEnvironments/csds-semarchy-xdm-${var.env}-env/certificates/csds-active-apps-${var.env}-cert"
+  certificate_binding_type                 = "SniEnabled"
+  depends_on                               = [module.container_app]
+}
+
+resource "azurerm_container_app_custom_domain" "fd_domain_passive" {
+  container_app_id                         = module.container_app.container_app_ids["passive"]
+  name                                     = "csds-passive.${local.env_map[var.env]}.apps.hmcts.net"
+  container_app_environment_certificate_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.App/managedEnvironments/csds-semarchy-xdm-${var.env}-env/certificates/csds-passive-apps-${var.env}-cert"
+  certificate_binding_type                 = "SniEnabled"
+  depends_on                               = [module.container_app]
 }
