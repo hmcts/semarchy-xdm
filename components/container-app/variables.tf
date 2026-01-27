@@ -117,6 +117,14 @@ variable "passive_environment_certificate_key_vault_secret_id" {
   description = "Key Vault Secret ID for the environment certificate"
   type        = string
 }
+variable "active_application_environment_certificate_key_vault_secret_id" {
+  description = "Key Vault Secret ID for the application environment certificate"
+  type        = string
+}
+variable "passive_application_environment_certificate_key_vault_secret_id" {
+  description = "Key Vault Secret ID for the application environment certificate"
+  type        = string
+}
 
 variable "generate_setup_token" {
   description = "Whether to generate a setup token for Semarchy XDM"

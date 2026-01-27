@@ -18,8 +18,10 @@ passive_max_replicas    = 2
 
 generate_setup_token = true
 
-active_environment_certificate_key_vault_secret_id  = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-active-sandbox-platform-hmcts-net-cert"
-passive_environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-passive-sandbox-platform-hmcts-net-cert"
+active_environment_certificate_key_vault_secret_id              = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-active-sandbox-platform-hmcts-net-cert"
+passive_environment_certificate_key_vault_secret_id             = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-passive-sandbox-platform-hmcts-net-cert"
+active_application_environment_certificate_key_vault_secret_id  = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-sandbox-apps-hmcts-net"
+passive_application_environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/csds-passive-sandbox-apps-hmcts-net"
 
 admin_group = "DTS Crime Standing Data Service Admin (env:sbox)"
 
