@@ -56,3 +56,11 @@ resource "azurerm_storage_share" "container" {
   storage_account_id = module.storage.storageaccount_id
   quota              = "1"
 }
+
+resource "azurerm_storage_share_file" "server-xml" {
+  name             = "server.xml"
+  storage_share_id = azurerm_storage_share.container.id
+  source           = "server.xml"
+  content_type     = "text/xml"
+  content_md5      = filemd5("server.xml")
+}
