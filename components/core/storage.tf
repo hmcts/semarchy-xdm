@@ -58,9 +58,9 @@ resource "azurerm_storage_share" "container" {
 }
 
 resource "azurerm_storage_share_file" "server-xml" {
-  name             = "server.xml"
-  storage_share_id = azurerm_storage_share.container.id
-  source           = "server.xml"
-  content_type     = "text/xml"
-  content_md5      = filemd5("server.xml")
+  name              = "server.xml"
+  storage_share_url = azurerm_storage_share.container.url
+  source            = "server.xml"
+  content_type      = "text/xml"
+  content_md5       = filemd5("server.xml")
 }
