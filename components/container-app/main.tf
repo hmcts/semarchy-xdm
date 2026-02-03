@@ -56,7 +56,7 @@ module "container_app" {
           volume_mounts = {
             semarchyconf = {
               path       = "/usr/local/tomcat/conf/server.xml"
-              mount_path = "/server.xml"
+              sub_path = "/server.xml"
             }
           }
         }
