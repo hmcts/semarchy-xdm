@@ -35,6 +35,14 @@ module "container_app" {
     "csds-passive-apps-${var.env}-cert" = var.passive_application_environment_certificate_key_vault_secret_id
   }
 
+  environment_storage = {
+    semarchyconf = {
+      account_name = data.azurerm_storage_account.csds.name
+      share_name   = "csds-container-${var.env}"
+      access_key   = data.azurerm_storage_account.csds.primary_access_key
+    }
+  }
+
   container_apps = {
     active = {
       workload_profile_name = "dedicated"
@@ -44,6 +52,13 @@ module "container_app" {
           cpu    = var.container_cpu
           memory = var.container_memory
           env    = local.env_vars
+
+          volume_mounts = {
+            semarchyconf = {
+              path       = "/usr/local/tomcat/conf/server.xml"
+              mount_path = "/server.xml"
+            }
+          }
         }
       }
 
@@ -66,6 +81,13 @@ module "container_app" {
         zone_resource_group_name    = "reformMgmtRG"
         environment_certificate_key = "csds-active-${var.env}-cert"
         private_dns_zone            = local.private_dns_zone
+      }
+
+      volumes = {
+        semarchyconf = {
+          storage_name = "semarchyconf"
+          storage_type = "AzureFile"
+        }
       }
     }
     passive = {

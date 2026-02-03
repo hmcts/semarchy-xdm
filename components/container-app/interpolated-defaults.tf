@@ -112,3 +112,8 @@ locals {
     [for env_var in local.optional_env_vars : env_var if !contains(local.user_env_var_names, env_var.name)],
   )
 }
+
+data "azurerm_storage_account" "csds" {
+  name                = "csds${var.env}storage"
+  resource_group_name = var.resource_group_name
+}
