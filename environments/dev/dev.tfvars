@@ -24,3 +24,27 @@ active_application_environment_certificate_key_vault_secret_id  = "https://acmed
 passive_application_environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-dev-apps-hmcts-net"
 
 admin_group = "DTS Crime Standing Data Service Admin (env:dev)"
+
+key_vault_secrets = [
+  {
+    name                  = "xdm-repo-url"
+    key_vault_id          = "/subscriptions/8b6ea922-0862-443e-af15-6056e1c9b9a4/resourceGroups/csds-semarchy-xdm-dev-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-dev"
+    key_vault_secret_name = "xdm-repo-url"
+  },
+  {
+    name                  = "xdm-repo-username"
+    key_vault_id          = "/subscriptions/8b6ea922-0862-443e-af15-6056e1c9b9a4/resourceGroups/csds-semarchy-xdm-dev-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-dev"
+    key_vault_secret_name = "xdm-repo-username"
+  },
+  {
+    name                  = "xdm-repo-password"
+    key_vault_id          = "/subscriptions/8b6ea922-0862-443e-af15-6056e1c9b9a4/resourceGroups/csds-semarchy-xdm-dev-rg/providers/Microsoft.KeyVault/vaults/csds-keyvault-dev"
+    key_vault_secret_name = "xdm-repo-password"
+  },
+]
+
+container_env_vars = [
+  { name = "XDM_REPOSITORY_URL", secret_name = "xdm-repo-url" },
+  { name = "XDM_REPOSITORY_USERNAME", secret_name = "xdm-repo-username" },
+  { name = "XDM_REPOSITORY_PASSWORD", secret_name = "xdm-repo-password" },
+]
