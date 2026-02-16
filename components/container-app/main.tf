@@ -134,7 +134,7 @@ resource "azurerm_key_vault_access_policy" "container_app" {
 
 resource "azurerm_container_app_custom_domain" "fd_domain_active" {
   container_app_id                         = module.container_app.container_app_ids["active"]
-  name                                     = "csds.${local.env_map[var.env]}.apps.hmcts.net"
+  name                                     = var.env == "prod" ? "csds.apps.hmcts.net" : "csds.${local.env_map[var.env]}.apps.hmcts.net"
   container_app_environment_certificate_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.App/managedEnvironments/csds-semarchy-xdm-${var.env}-env/certificates/csds-active-apps-${var.env}-cert"
   certificate_binding_type                 = "SniEnabled"
   depends_on                               = [module.container_app]
@@ -142,7 +142,7 @@ resource "azurerm_container_app_custom_domain" "fd_domain_active" {
 
 resource "azurerm_container_app_custom_domain" "fd_domain_passive" {
   container_app_id                         = module.container_app.container_app_ids["passive"]
-  name                                     = "csds-passive.${local.env_map[var.env]}.apps.hmcts.net"
+  name                                     = var.env == "prod" ? "csds-passive.apps.hmcts.net" : "csds-passive.${local.env_map[var.env]}.apps.hmcts.net"
   container_app_environment_certificate_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.App/managedEnvironments/csds-semarchy-xdm-${var.env}-env/certificates/csds-passive-apps-${var.env}-cert"
   certificate_binding_type                 = "SniEnabled"
   depends_on                               = [module.container_app]
