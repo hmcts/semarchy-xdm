@@ -62,3 +62,8 @@ resource "azurerm_linux_function_app" "this" {
     ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"]]
   }
 }
+
+import {
+  to = azurerm_linux_function_app.this["pnld"]
+  id = "/subscriptions/b72ab7b7-723f-4b18-b6f6-03b0f2c6a1bb/resourceGroups/csds-semarchy-xdm-sbox-rg/providers/Microsoft.Web/sites/csds-pnld-func-sbox"
+}
