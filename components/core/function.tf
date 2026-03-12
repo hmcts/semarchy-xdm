@@ -14,7 +14,7 @@ resource "azurerm_user_assigned_identity" "functions" {
   tags                = module.ctags.common_tags
 }
 
-resource "azurerm_key_vault_access_policy" "this" {
+resource "azurerm_key_vault_access_policy" "functions" {
   key_vault_id = module.key_vault.key_vault_id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = azurerm_user_assigned_identity.functions.principal_id
