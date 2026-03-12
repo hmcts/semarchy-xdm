@@ -76,7 +76,7 @@ locals {
       ]
     }
     // Allow Function App
-    "${azurerm_linux_function_app.this.identity.principal_id}" = {
+    "${azurerm_linux_function_app.this.identity[0].principal_id}" = {
       certificate_permissions = []
       key_permissions = [
         "Get",
