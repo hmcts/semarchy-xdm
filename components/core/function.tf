@@ -14,6 +14,14 @@ resource "azurerm_user_assigned_identity" "functions" {
   tags                = module.ctags.common_tags
 }
 
+resource "azurerm_key_vault_access_policy" "this" {
+  key_vault_id = module.key_vault.key_vault_id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_user_assigned_identity.functions.principal_id
+
+  secret_permissions = ["Get", "List"]
+}
+
 resource "azurerm_linux_function_app" "this" {
   for_each                   = toset(local.functions)
   name                       = "csds-${each.key}-func-${var.env}"

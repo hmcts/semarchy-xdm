@@ -75,19 +75,6 @@ locals {
         "Backup"
       ]
     }
-    // Allow Function App
-    "${azurerm_user_assigned_identity.functions.principal_id}" = {
-      certificate_permissions = []
-      key_permissions = [
-        "Get",
-        "List",
-      ]
-      storage_permissions = []
-      secret_permissions = [
-        "Get",
-        "List",
-      ]
-    }
   }
 
   functions = [
