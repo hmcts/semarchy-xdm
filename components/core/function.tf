@@ -7,8 +7,16 @@ resource "azurerm_service_plan" "function_app" {
   tags                = module.ctags.common_tags
 }
 
+resource "azurerm_user_assigned_identity" "functions" {
+  name                = "csds-functions-uami-${var.env}"
+  location            = azurerm_resource_group.core.location
+  resource_group_name = azurerm_resource_group.core.name
+  tags                = module.ctags.common_tags
+}
+
 resource "azurerm_linux_function_app" "this" {
-  name                       = "csds-func-${var.env}"
+  for_each                   = toset(local.functions)
+  name                       = "csds-${each.key}-func-${var.env}"
   location                   = azurerm_resource_group.core.location
   resource_group_name        = azurerm_resource_group.core.name
   service_plan_id            = azurerm_service_plan.function_app.id
@@ -36,7 +44,8 @@ resource "azurerm_linux_function_app" "this" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.functions.id]
   }
 
   depends_on = [module.networking]

@@ -76,7 +76,7 @@ locals {
       ]
     }
     // Allow Function App
-    "${azurerm_linux_function_app.this.identity[0].principal_id}" = {
+    "${azurerm_user_assigned_identity.functions.principal_id}" = {
       certificate_permissions = []
       key_permissions = [
         "Get",
@@ -89,6 +89,11 @@ locals {
       ]
     }
   }
+
+  functions = [
+    "pnld",
+    "pub"
+  ]
 }
 
 data "azuread_group" "admin_group" {
