@@ -46,7 +46,8 @@ resource "azurerm_storage_share" "this" {
 }
 
 resource "azurerm_storage_share" "functions" {
-  name               = "csds-func-${var.env}"
+  for_each           = local.functions
+  name               = "csds-func-${each.key}-${var.env}"
   storage_account_id = module.storage.storageaccount_id
   quota              = "64"
 }
