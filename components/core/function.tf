@@ -34,14 +34,6 @@ resource "azurerm_linux_function_app" "this" {
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
 
-  storage_account {
-    name         = module.storage.storageaccount_name
-    account_name = module.storage.storageaccount_name
-    access_key   = module.storage.storageaccount_primary_access_key
-    share_name   = azurerm_storage_share.functions[each.key].name
-    type         = "AzureFiles"
-  }
-
   site_config {
     application_stack {
       python_version = var.python_version
