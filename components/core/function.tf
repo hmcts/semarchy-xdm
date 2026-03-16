@@ -56,6 +56,7 @@ resource "azurerm_linux_function_app" "this" {
     "FUNCTIONS_WORKER_RUNTIME"    = "python"
     "FUNCTIONS_EXTENSION_VERSION" = "~4"
     "WEBSITE_CONTENTOVERVNET"     = "1"
+    "WEBSITE_CONTENTSHARE"      = azurerm_storage_share.functions[each.key].name
   }
 
   identity {
