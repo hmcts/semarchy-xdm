@@ -180,7 +180,7 @@ stages:
             - job: DeployFunctionApps
               pool: hmcts-cftptl-agent-pool
               timeoutInMinutes: ${{ variables.timeoutInMinutes }}
-              #dependsOn: TerraformPlanApply
+              dependsOn: TerraformPlanApply
               steps:
               - template: templates/python-function-app-build-deploy.yaml
                 parameters:
