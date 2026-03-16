@@ -43,10 +43,10 @@ steps:
               dotnet build extensions.csproj --output ./bin
           fi
           python -m pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
-        displayName: "Install Python dependencies"
+        displayName: "Install Python dependencies for ${{ function.appName }}"
         workingDirectory: ${{ function.workingDirectory }}
       - task: ArchiveFiles@2
-        displayName: "Archive files"
+        displayName: "Archive files for ${{ function.appName }}"
         inputs:
           rootFolderOrFile: "${{ function.workingDirectory }}"
           includeRootFolder: false
@@ -67,5 +67,5 @@ steps:
           azureSubscription: ${{ parameters.serviceConnection }}
           appType: "functionAppLinux"
           appName: "csds-${{ function.appName }}-func-${{ parameters.environment }}"
-          package: "$(Build.ArtifactStagingDirectory)/${{ function.appName }}_build$(Build.BuildId).zip"
-          runtimeStack: "PYTHON|3.13"
+          package: "$(Build.ArtifactStagingDirectory)/functions/${{ function.appName }}_build$(Build.BuildId).zip"
+          runtimeStack: "PYTHON|${{ parameters.pythonVersion }}"
