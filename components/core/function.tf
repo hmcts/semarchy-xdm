@@ -40,7 +40,9 @@ resource "azurerm_linux_function_app" "this" {
       python_version = var.python_version
     }
 
-    vnet_route_all_enabled = true
+    vnet_route_all_enabled                 = true
+    application_insights_connection_string = azurerm_application_insights.this.connection_string
+    application_insights_key               = azurerm_application_insights.this.instrumentation_key
   }
 
   virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-functions-${var.env}"
@@ -51,7 +53,7 @@ resource "azurerm_linux_function_app" "this" {
     "WEBSITE_CONTENTOVERVNET"     = "1"
     "WEBSITE_CONTENTSHARE"        = azurerm_storage_share.functions[each.key].name
     "ENABLE_ORYX_BUILD"           = "true"
-    "SemarchyBaseURL"             = var.env == "prod" ? "https://csds.apps.hmcts.net/api/rest" : "https://csds.${var.env}.apps.hmcts.net/api/rest"
+    "SemarchyBaseURL"             = local.semarchy-urls[var.env]
     "SemarchyAPIKey"              = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
   }
 
@@ -63,6 +65,6 @@ resource "azurerm_linux_function_app" "this" {
   depends_on = [module.networking]
 
   lifecycle {
-    ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"]]
+    ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"], sticky_settings]
   }
 }
