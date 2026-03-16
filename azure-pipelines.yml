@@ -189,7 +189,7 @@ stages:
                   serviceConnection: ${{ deployment.service_connection }}
                   pythonVersion: "3.13"
                   functions:
-                    - workingDirectory: "$(System.DefaultWorkingDirectory)/semarchy-xdm/functions/pnld"
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/functions/pnld"
                       appName: "pnld"
-                    - workingDirectory: "$(System.DefaultWorkingDirectory)/semarchy-xdm/functions/pub"
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/functions/pub"
                       appName: "pub"
