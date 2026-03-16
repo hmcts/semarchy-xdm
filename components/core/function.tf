@@ -28,6 +28,8 @@ resource "azurerm_linux_function_app" "this" {
   location                                 = azurerm_resource_group.core.location
   resource_group_name                      = azurerm_resource_group.core.name
   service_plan_id                          = azurerm_service_plan.function_app.id
+  storage_account_name                     = module.storage.storageaccount_name
+  storage_account_access_key               = module.storage.storageaccount_primary_access_key
   tags                                     = module.ctags.common_tags
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
