@@ -30,7 +30,7 @@ resource "azurerm_linux_function_app" "this" {
   service_plan_id                          = azurerm_service_plan.function_app.id
   storage_account_name                     = module.storage.storageaccount_name
   storage_account_access_key               = module.storage.storageaccount_primary_access_key
-  tags                                     = module.ctags.common_tags
+  tags                                     = merge(module.ctags.common_tags, { "hidden-link: /app-insights-resource-id" = azurerm_application_insights.this.id })
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
   key_vault_reference_identity_id          = azurerm_user_assigned_identity.functions.id
