@@ -84,16 +84,6 @@ module "networking" {
           source_address_prefix      = "AzureLoadBalancer"
           destination_address_prefix = "*"
         }
-        allow_vnet_to_vnet = {
-          priority                   = 4030
-          direction                  = "Inbound"
-          access                     = "Allow"
-          protocol                   = "*"
-          source_port_range          = "*"
-          destination_port_range     = "*"
-          source_address_prefix      = "VirtualNetwork"
-          destination_address_prefix = "VirtualNetwork"
-        }
       }
     }
   }
