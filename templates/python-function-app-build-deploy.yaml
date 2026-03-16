@@ -29,12 +29,12 @@ steps:
     clean: true
   - bash: |
       set -e
-      sudo add-apt-repository ppa:deadsnakes/ppa -y
-      sudo apt-get update -y
-      sudo apt-get install -y python${{ parameters.pythonVersion }} python${{ parameters.pythonVersion }}-venv python${{ parameters.pythonVersion }}-dev
-      curl -sS https://bootstrap.pypa.io/get-pip.py | sudo python${{ parameters.pythonVersion }}
-      sudo update-alternatives --install /usr/bin/python python /usr/bin/python${{ parameters.pythonVersion }} 1
-      sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ parameters.pythonVersion }} 1
+      add-apt-repository ppa:deadsnakes/ppa -y
+      apt-get update -y
+      apt-get install -y python${{ parameters.pythonVersion }} python${{ parameters.pythonVersion }}-venv python${{ parameters.pythonVersion }}-dev
+      curl -sS https://bootstrap.pypa.io/get-pip.py | python${{ parameters.pythonVersion }}
+      update-alternatives --install /usr/bin/python python /usr/bin/python${{ parameters.pythonVersion }} 1
+      update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${{ parameters.pythonVersion }} 1
       python --version
     displayName: "Install Python ${{ parameters.pythonVersion }}"
   - ${{ each function in parameters.functions }}:
@@ -55,7 +55,7 @@ steps:
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)/**/*.zip'
-      artifactName: 'drop'
+      artifactName: '${{ parameters.environment }}-function-apps'
   - ${{ each function in parameters.functions }}:
     - task: AzureFunctionApp@2
       displayName: "Deploy Function App ${{ function.appName }} in ${{ parameters.environment }}"
