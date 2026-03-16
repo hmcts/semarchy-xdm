@@ -33,6 +33,7 @@ resource "azurerm_linux_function_app" "this" {
   tags                                     = module.ctags.common_tags
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
+  key_vault_reference_identity_id          = azurerm_user_assigned_identity.functions.id
 
   site_config {
     application_stack {
@@ -48,7 +49,10 @@ resource "azurerm_linux_function_app" "this" {
     "FUNCTIONS_WORKER_RUNTIME"    = "python"
     "FUNCTIONS_EXTENSION_VERSION" = "~4"
     "WEBSITE_CONTENTOVERVNET"     = "1"
-    "WEBSITE_CONTENTSHARE"      = azurerm_storage_share.functions[each.key].name
+    "WEBSITE_CONTENTSHARE"        = azurerm_storage_share.functions[each.key].name
+    "ENABLE_ORYX_BUILD"           = "true"
+    "SemarchyBaseURL"             = var.env == "prod" ? "https://csds.apps.hmcts.net/api/rest" : "https://csds.${var.env}.apps.hmcts.net/api/rest"
+    "SemarchyAPIKey"              = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
   }
 
   identity {
