@@ -26,7 +26,6 @@ parameters:
     default: ""
   - name: functions
     type: object
-    default: []
 
 steps:
   - checkout: self
@@ -57,15 +56,15 @@ steps:
       artifactName: 'drop'
   - ${{ each function in parameters.functions }}:
     - task: AzureFunctionApp@2
-      displayName: "Deploy Function App ${{ function.appName }} in ${{ deployment.environment }}"
+      displayName: "Deploy Function App ${{ function.appName }} in ${{ parameters.environment }}"
       condition: |
         or(
         and(succeeded(), eq('${{ parameters.overrideAction }}', 'apply')),
         and(succeeded(), eq(variables['isMain'], true), eq(variables['isAutoTriggered'], true))
         )
       inputs:
-        azureSubscription: ${{ deployment.service_connection }}
+        azureSubscription: ${{ parameters.serviceConnection }}
         appType: 'functionAppLinux'
-      appName: 'csds-${{ function.appName }}-func-${{ deployment.environment }}'
-      package: '$(Build.ArtifactStagingDirectory)/${{ function.appName }}_build$(Build.BuildId).zip'
-      runtimeStack: 'PYTHON|3.13'
+        appName: 'csds-${{ function.appName }}-func-${{ parameters.environment }}'
+        package: '$(Build.ArtifactStagingDirectory)/${{ function.appName }}_build$(Build.BuildId).zip'
+        runtimeStack: 'PYTHON|3.13'
