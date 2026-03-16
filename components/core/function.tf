@@ -30,16 +30,19 @@ resource "azurerm_linux_function_app" "this" {
   service_plan_id                          = azurerm_service_plan.function_app.id
   storage_account_name                     = module.storage.storageaccount_name
   storage_account_access_key               = module.storage.storageaccount_primary_access_key
-  tags                                     = module.ctags.common_tags
+  tags                                     = merge(module.ctags.common_tags, { "hidden-link: /app-insights-resource-id" = azurerm_application_insights.this.id })
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
+  key_vault_reference_identity_id          = azurerm_user_assigned_identity.functions.id
 
   site_config {
     application_stack {
       python_version = var.python_version
     }
 
-    vnet_route_all_enabled = true
+    vnet_route_all_enabled                 = true
+    application_insights_connection_string = azurerm_application_insights.this.connection_string
+    application_insights_key               = azurerm_application_insights.this.instrumentation_key
   }
 
   virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-functions-${var.env}"
@@ -48,7 +51,10 @@ resource "azurerm_linux_function_app" "this" {
     "FUNCTIONS_WORKER_RUNTIME"    = "python"
     "FUNCTIONS_EXTENSION_VERSION" = "~4"
     "WEBSITE_CONTENTOVERVNET"     = "1"
-    "WEBSITE_CONTENTSHARE"      = azurerm_storage_share.functions[each.key].name
+    "WEBSITE_CONTENTSHARE"        = azurerm_storage_share.functions[each.key].name
+    "ENABLE_ORYX_BUILD"           = "true"
+    "SemarchyBaseURL"             = local.semarchy-urls[var.env]
+    "SemarchyAPIKey"              = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
   }
 
   identity {
@@ -59,6 +65,6 @@ resource "azurerm_linux_function_app" "this" {
   depends_on = [module.networking]
 
   lifecycle {
-    ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"]]
+    ignore_changes = [app_settings["FUNCTIONS_EXTENSION_VERSION"], app_settings["WEBSITE_VNET_ROUTE_ALL"], sticky_settings]
   }
 }

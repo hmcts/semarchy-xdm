@@ -176,3 +176,20 @@ stages:
                   serviceConnection: ${{ deployment.service_connection }}
                   product: ${{ variables.product }}
                   terraformInitSubscription: ${{ variables.terraformInitSubscription }}
+          - ${{ if eq(deployment.component, 'core') }}:
+            - job: DeployFunctionApps
+              pool: hmcts-cftptl-agent-pool
+              timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+              dependsOn: TerraformPlanApply
+              steps:
+              - template: templates/python-function-app-build-deploy.yaml
+                parameters:
+                  overrideAction: ${{ parameters.overrideAction }}
+                  environment: ${{ deployment.environment}}
+                  serviceConnection: ${{ deployment.service_connection }}
+                  pythonVersion: "3.13"
+                  functions:
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/functions/pnld"
+                      appName: "pnld"
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/functions/pub"
+                      appName: "pub"
