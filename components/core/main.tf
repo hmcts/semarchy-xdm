@@ -26,6 +26,7 @@ resource "azurerm_application_insights" "this" {
   resource_group_name = azurerm_resource_group.core.name
   workspace_id        = azurerm_log_analytics_workspace.main.id
   application_type    = "other"
+  tags                = module.ctags.common_tags
 }
 
 module "key_vault" {
