@@ -176,3 +176,19 @@ stages:
                   serviceConnection: ${{ deployment.service_connection }}
                   product: ${{ variables.product }}
                   terraformInitSubscription: ${{ variables.terraformInitSubscription }}
+          - job: DeployFunctionApps
+            pool: hmcts-cftptl-agent-pool
+            timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+            steps:
+              - template: templates/python-function-app-build-deploy.yaml
+                parameters:
+                  overrideAction: ${{ parameters.overrideAction }}
+                  environment: ${{ deployment.environment}}
+                  serviceConnection: ${{ deployment.service_connection }}
+                  pythonVersion: "3.13"
+                  architecture: "x64"
+                  functions:
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/semarchy-xdm/functions/pnld"
+                      appName: "pnld"
+                    - workingDirectory: "$(System.DefaultWorkingDirectory)/semarchy-xdm/functions/pub"
+                      appName: "pub"

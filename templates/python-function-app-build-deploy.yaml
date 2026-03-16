@@ -1,0 +1,71 @@
+parameters:
+  - name: overrideAction
+    type: string
+    default: plan
+    values:
+      - plan
+      - apply
+      - destroy
+  - name: environment
+    type: string
+    default: ""
+  - name: serviceConnection
+    type: string
+    default: ""
+  - name: pythonVersion
+    type: string
+    default: "3.13"
+  - name: architecture
+    type: string
+    default: "x64"
+  - name: workingDirectory
+    type: string
+    default: ""
+  - name: appName
+    type: string
+    default: ""
+  - name: functions
+    type: object
+    default: []
+
+steps:
+  - checkout: self
+    clean: true
+  - task: UsePythonVersion@0
+    displayName: "Set Python version to ${{ parameters.pythonVersion }}"
+    inputs:
+      versionSpec: '${{ parameters.pythonVersion }}'
+      architecture: '${{ parameters.architecture }}'
+  - ${{ each function in parameters.functions }}:
+    - bash: |
+        if [ -f extensions.csproj ]
+        then
+            dotnet build extensions.csproj --output ./bin
+        fi
+        pip install --target="./.python_packages/lib/site-packages" -r ./requirements.txt
+      displayName: "Install Python dependencies"
+      workingDirectory: ${{ function.workingDirectory }}
+    - task: ArchiveFiles@2
+      displayName: "Archive files"
+      inputs:
+        rootFolderOrFile: "${{ function.workingDirectory }}"
+        includeRootFolder: false
+        archiveFile: "$(Build.ArtifactStagingDirectory)/${{ function.appName }}_build$(Build.BuildId).zip"
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+      artifactName: 'drop'
+  - ${{ each function in parameters.functions }}:
+    - task: AzureFunctionApp@2
+      displayName: "Deploy Function App ${{ function.appName }} in ${{ deployment.environment }}"
+      condition: |
+        or(
+        and(succeeded(), eq('${{ parameters.overrideAction }}', 'apply')),
+        and(succeeded(), eq(variables['isMain'], true), eq(variables['isAutoTriggered'], true))
+        )
+      inputs:
+        azureSubscription: ${{ deployment.service_connection }}
+        appType: 'functionAppLinux'
+      appName: 'csds-${{ function.appName }}-func-${{ deployment.environment }}'
+      package: '$(Build.ArtifactStagingDirectory)/${{ function.appName }}_build$(Build.BuildId).zip'
+      runtimeStack: 'PYTHON|3.13'
