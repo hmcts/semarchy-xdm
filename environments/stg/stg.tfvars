@@ -1,5 +1,5 @@
 env                            = "stg"
-vnet_address_space             = ["10.24.236.64/26", "10.24.236.160/26"]
+vnet_address_space             = ["10.24.236.64/26", "10.24.236.160/27"]
 container_apps_subnet_address  = "10.24.236.64/27"
 general_purpose_subnet_address = "10.24.236.96/28"
 postgresql_subnet_address      = "10.24.236.112/28"
