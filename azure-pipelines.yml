@@ -176,10 +176,11 @@ stages:
                   serviceConnection: ${{ deployment.service_connection }}
                   product: ${{ variables.product }}
                   terraformInitSubscription: ${{ variables.terraformInitSubscription }}
-          - job: DeployFunctionApps
-            pool: hmcts-cftptl-agent-pool
-            timeoutInMinutes: ${{ variables.timeoutInMinutes }}
-            steps:
+          - ${{ if eq(deployment.component, 'core') }}:
+            - job: DeployFunctionApps
+              pool: hmcts-cftptl-agent-pool
+              timeoutInMinutes: ${{ variables.timeoutInMinutes }}
+              steps:
               - template: templates/python-function-app-build-deploy.yaml
                 parameters:
                   overrideAction: ${{ parameters.overrideAction }}
