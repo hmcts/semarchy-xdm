@@ -7,8 +7,8 @@ resource "azurerm_resource_group" "core" {
 resource "azurerm_role_assignment" "this" {
   for_each             = toset(local.core_roles)
   scope                = azurerm_resource_group.core.id
-  role_definition_id   = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", each.value)) ? each.value : null
-  role_definition_name = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", each.value)) ? null : each.value
+  role_definition_id   = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", each.value)) ? each.value : null
+  role_definition_name = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", each.value)) ? null : each.value
   principal_id         = data.azuread_group.admin_group.object_id
 }
 
