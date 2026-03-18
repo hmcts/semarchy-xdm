@@ -37,7 +37,7 @@ locals {
       principal_id = data.azuread_group.admin_group.object_id
     },
     {
-      role_id      = "b6329e09-8f32-bfca-fa4f-f2e4d90fd3ff" // Container App Log Reader
+      role_id      = "providers/Microsoft.Authorization/roleDefinitions/b6329e09-8f32-bfca-fa4f-f2e4d90fd3ff" // Container App Log Reader
       principal_id = data.azuread_group.admin_group.object_id
     }
   ]
