@@ -90,10 +90,22 @@ locals {
     }
   }
 
-  functions = [
-    "pnld",
-    "pub"
-  ]
+  functions = {
+    pnld = {
+      vars = {
+        "SemarchyBaseURL" = local.semarchy-urls[var.env]
+        "SemarchyAPIKey"  = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
+      }
+    }
+    pub = {
+      vars = {
+        "SemarchyBaseURL"        = local.semarchy-urls[var.env]
+        "SemarchyAPIKey"         = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
+        "UrgentWaitPeriodSecods" = 600
+        "PSSBaseURL"             = "https://this.needs.updating/api/rest"
+      }
+    }
+  }
 
   semarchy-urls = {
     prod = "https://csds.apps.hmcts.net/api/rest"
