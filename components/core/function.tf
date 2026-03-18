@@ -23,7 +23,7 @@ resource "azurerm_key_vault_access_policy" "functions" {
 }
 
 resource "azurerm_linux_function_app" "this" {
-  for_each                                 = toset(local.functions)
+  for_each                                 = local.functions
   name                                     = "csds-${each.key}-func-${var.env}"
   location                                 = azurerm_resource_group.core.location
   resource_group_name                      = azurerm_resource_group.core.name
@@ -47,7 +47,7 @@ resource "azurerm_linux_function_app" "this" {
 
   virtual_network_subnet_id = "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Network/virtualNetworks/csds-network-csds-${var.env}/subnets/csds-network-functions-${var.env}"
 
-  app_settings = {
+  app_settings = merge({
     "FUNCTIONS_WORKER_RUNTIME"            = "python"
     "FUNCTIONS_EXTENSION_VERSION"         = "~4"
     "WEBSITE_CONTENTOVERVNET"             = "1"
@@ -56,9 +56,7 @@ resource "azurerm_linux_function_app" "this" {
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE" = "true"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"     = "true"
     "ENABLE_ORYX_BUILD"                   = "true"
-    "SemarchyBaseURL"                     = local.semarchy-urls[var.env]
-    "SemarchyAPIKey"                      = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
-  }
+  }, each.value.vars)
 
   identity {
     type         = "UserAssigned"
