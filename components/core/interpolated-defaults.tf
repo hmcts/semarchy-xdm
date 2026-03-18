@@ -99,10 +99,10 @@ locals {
     }
     pub = {
       vars = {
-        "SemarchyBaseURL"        = local.semarchy-urls[var.env]
-        "SemarchyAPIKey"         = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
-        "UrgentWaitPeriodSecods" = 600
-        "PSSBaseURL"             = "https://this.needs.updating/api/rest"
+        "SemarchyBaseURL"         = local.semarchy-urls[var.env]
+        "SemarchyAPIKey"          = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
+        "UrgentWaitPeriodSeconds" = 600
+        "PSSBaseURL"              = "https://this.needs.updating/api/rest"
       }
     }
   }
