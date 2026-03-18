@@ -27,6 +27,7 @@ locals {
     "Reader",
     "Storage Blob Data Reader",
     "Storage Queue Data Reader",
+    "b6329e09-8f32-bfca-fa4f-f2e4d90fd3ff" // Container App Log Reader
   ]
 
   key_vault_access_policies = {
