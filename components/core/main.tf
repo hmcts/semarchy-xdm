@@ -5,11 +5,11 @@ resource "azurerm_resource_group" "core" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  for_each             = toset(local.core_roles)
+  for_each             = { for core_role in local.core_roles : "${core_role.role_name}-${core_role.principal_id}" => core_role }
   scope                = azurerm_resource_group.core.id
-  role_definition_id   = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", each.value)) ? each.value : null
-  role_definition_name = can(regex("(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", each.value)) ? null : each.value
-  principal_id         = data.azuread_group.admin_group.object_id
+  role_definition_id   = try(each.value.role_id, null)
+  role_definition_name = try(each.value.role_name, null)
+  principal_id         = each.value.principal_id
 }
 
 resource "azurerm_log_analytics_workspace" "main" {

@@ -24,10 +24,22 @@ locals {
     "/subscriptions/1baf5470-1c3e-40d3-a6f7-74bfbce4b348/resourceGroups/cft-ptl-network-rg/providers/Microsoft.Network/virtualNetworks/cft-ptl-vnet/subnets/aks-01",
   ]
   core_roles = [
-    "Reader",
-    "Storage Blob Data Reader",
-    "Storage Queue Data Reader",
-    "b6329e09-8f32-bfca-fa4f-f2e4d90fd3ff" // Container App Log Reader
+    {
+      role_name    = "Reader"
+      principal_id = data.azuread_group.admin_group.object_id
+    },
+    {
+      role_name    = "Storage Blob Data Reader"
+      principal_id = data.azuread_group.admin_group.object_id
+    },
+    {
+      role_name    = "Storage Queue Data Reader",
+      principal_id = data.azuread_group.admin_group.object_id
+    },
+    {
+      role_id      = "b6329e09-8f32-bfca-fa4f-f2e4d90fd3ff" // Container App Log Reader
+      principal_id = data.azuread_group.admin_group.object_id
+    }
   ]
 
   key_vault_access_policies = {
