@@ -5,7 +5,7 @@ resource "azurerm_resource_group" "core" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  for_each             = { for core_role in local.core_roles : "${core_role.role_name}-${core_role.principal_id}" => core_role }
+  for_each             = { for core_role in local.core_roles : "${try(core_role.role_name, core_role.role_id)}-${core_role.principal_id}" => core_role }
   scope                = azurerm_resource_group.core.id
   role_definition_id   = try(each.value.role_id, null)
   role_definition_name = try(each.value.role_name, null)
