@@ -7,17 +7,11 @@ resource "azurerm_service_plan" "function_app" {
   tags                = module.ctags.common_tags
 }
 
-resource "azurerm_user_assigned_identity" "functions" {
-  name                = "csds-functions-uami-${var.env}"
-  location            = azurerm_resource_group.core.location
-  resource_group_name = azurerm_resource_group.core.name
-  tags                = module.ctags.common_tags
-}
-
 resource "azurerm_key_vault_access_policy" "functions" {
+  for_each     = local.functions
   key_vault_id = module.key_vault.key_vault_id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_user_assigned_identity.functions.principal_id
+  object_id    = azurerm_linux_function_app.this[each.key].identity[0].principal_id
 
   secret_permissions = ["Get", "List"]
 }
@@ -33,7 +27,6 @@ resource "azurerm_linux_function_app" "this" {
   tags                                     = merge(module.ctags.common_tags, { "hidden-link: /app-insights-resource-id" = azurerm_application_insights.this.id })
   https_only                               = true
   ftp_publish_basic_authentication_enabled = false
-  key_vault_reference_identity_id          = azurerm_user_assigned_identity.functions.id
 
   site_config {
     application_stack {
@@ -59,8 +52,7 @@ resource "azurerm_linux_function_app" "this" {
   }, each.value.vars)
 
   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.functions.id]
+    type = "SystemAssigned"
   }
 
   depends_on = [module.networking]
