@@ -7,14 +7,14 @@ resource "azurerm_service_plan" "function_app" {
   tags                = module.ctags.common_tags
 }
 
-resource "azurerm_key_vault_access_policy" "functions" {
-  for_each     = local.functions
-  key_vault_id = module.key_vault.key_vault_id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = azurerm_linux_function_app.this[each.key].identity[0].principal_id
-
-  secret_permissions = ["Get", "List"]
-}
+#resource "azurerm_key_vault_access_policy" "functions" {
+#  for_each     = local.functions
+#  key_vault_id = module.key_vault.key_vault_id
+#  tenant_id    = data.azurerm_client_config.current.tenant_id
+#  object_id    = azurerm_linux_function_app.this[each.key].identity[0].principal_id
+#
+#  secret_permissions = ["Get", "List"]
+#}
 
 resource "azurerm_linux_function_app" "this" {
   for_each                                 = local.functions
