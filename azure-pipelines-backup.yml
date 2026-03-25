@@ -99,7 +99,7 @@ stages:
 
           # Step 1: Identify the model edition to export
           - bash: |
-              set -euo pipefail
+              set -exuo pipefail
 
               echo "=== Identifying ${{ parameters.modelEditionStatus }} Model Edition ==="
 
@@ -151,7 +151,7 @@ stages:
 
           # Step 2: Export the model edition as XML
           - bash: |
-              set -euo pipefail
+              set -exuo pipefail
 
               EDITION_KEY=$(editionKey)
               TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
