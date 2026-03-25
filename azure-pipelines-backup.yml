@@ -106,9 +106,21 @@ stages:
               BASE_URL="https://${{ parameters.semarchyHostName }}/semarchy/api/rest/app-builder"
               STATUS="${{ parameters.modelEditionStatus }}"
 
-              RESPONSE=$(curl -sf -X GET \
+              TMPFILE=$(mktemp)
+              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
                 "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=${STATUS}" \
                 -H "API-Key: $(SEMARCHY_API_KEY)")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching model editions."
+                echo "Response body:"
+                cat "$TMPFILE"
+                rm -f "$TMPFILE"
+                exit 1
+              fi
+
+              RESPONSE=$(cat "$TMPFILE")
+              rm -f "$TMPFILE"
 
               if [ "$STATUS" = "OPEN" ]; then
                 # Extract the single OPEN edition key
