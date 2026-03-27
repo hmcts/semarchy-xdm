@@ -37,6 +37,12 @@ variable "postgres_sku" {
   default     = "GP_Standard_D8ds_v5"
 }
 
+variable "postgres_storage_mb" {
+  description = "The storage size for the PostgreSQL Flexible Server in MB"
+  type        = number
+  default     = 65536
+}
+
 variable "trigger_password_reset" {
   type    = string
   default = ""

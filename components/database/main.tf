@@ -47,6 +47,7 @@ module "postgresql" {
   enable_read_only_group_access = false
   trigger_password_reset        = var.trigger_password_reset
   pgsql_admin_username          = "csdsadmin"
+  pgsql_storage_mb              = var.postgres_storage_mb
 
   common_tags = module.ctags.common_tags
 }
