@@ -120,5 +120,5 @@ variable "generate_setup_token" {
 variable "functions_api_key_secret_slug" {
   description = "The slug for the API key secret in Key Vault"
   type        = string
-  default     = "csds-api-key/170b1f6082a0419696799e12e15a9e74"
+  default     = "csds-api-key"
 }
