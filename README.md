@@ -36,9 +36,6 @@ The infrastructure is composed of the following components:
 - **Extensions**: UUID-OSSP, FuzzyStrMatch
 - **Azure AD Authentication**: Integrated authentication for database access
 
-### Data Factory (`components/datafactory/`)
-- **Azure Data Factory**: Data integration and ETL workflows
-
 ## Directory Structure
 
 ```
@@ -47,7 +44,6 @@ The infrastructure is composed of the following components:
 │   ├── container-app/      # Azure Container Apps configuration
 │   ├── core/               # Core infrastructure (networking, key vault, logging)
 │   ├── database/           # PostgreSQL Flexible Server configuration
-│   └── datafactory/        # Azure Data Factory configuration
 ├── environments/           # Environment-specific configuration
 │   ├── dev/               # Development environment variables
 │   ├── sbox/              # Sandbox environment variables

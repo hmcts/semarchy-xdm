@@ -43,13 +43,6 @@ parameters:
         dependsOn:
           - "sandbox_core"
           - "sandbox_database"
-      - deployment: "sandbox_datafactory"
-        environment: "sbox"
-        component: "datafactory"
-        service_connection: "DCD-CFTAPPS-SBOX"
-        dependsOn:
-          - "sandbox_core"
-          - "sandbox_database"
       - deployment: "dev_core"
         environment: "dev"
         component: "core"
@@ -70,14 +63,6 @@ parameters:
           - "dev_core"
           - "dev_database"
           - "sandbox_container_app"
-      - deployment: "dev_datafactory"
-        environment: "dev"
-        component: "datafactory"
-        service_connection: "DCD-CFTAPPS-DEV"
-        dependsOn:
-          - "dev_core"
-          - "dev_database"
-          - "sandbox_datafactory"
       - deployment: "stg_core"
         environment: "stg"
         component: "core"
@@ -98,14 +83,6 @@ parameters:
           - "stg_core"
           - "stg_database"
           - "dev_container_app"
-      - deployment: "stg_datafactory"
-        environment: "stg"
-        component: "datafactory"
-        service_connection: "DCD-CFTAPPS-STG"
-        dependsOn:
-          - "stg_core"
-          - "stg_database"
-          - "dev_datafactory"
       - deployment: "prod_core"
         environment: "prod"
         component: "core"
@@ -126,14 +103,6 @@ parameters:
           - "prod_core"
           - "prod_database"
           - "stg_container_app"
-      - deployment: "prod_datafactory"
-        environment: "prod"
-        component: "datafactory"
-        service_connection: "DCD-CFTAPPS-PROD"
-        dependsOn:
-          - "prod_core"
-          - "prod_database"
-          - "stg_datafactory"
 
 variables:
   - name: timeoutInMinutes
