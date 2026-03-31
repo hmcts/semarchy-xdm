@@ -4,6 +4,14 @@
 
 trigger: none # No CI trigger - this pipeline runs on schedule only
 
+schedules:
+  - cron: "0 18 * * 1-5"
+    displayName: "Weekday 18:00 UTC backup"
+    branches:
+      include:
+        - master
+    always: true
+
 parameters:
   - name: semarchyHostName
     type: string
