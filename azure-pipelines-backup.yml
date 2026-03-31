@@ -24,7 +24,7 @@ parameters:
   - name: modelEditionStatus
     type: string
     displayName: "Model Edition Status to Export"
-    default: "CLOSED"
+    default: "OPEN"
     values:
       - OPEN
       - CLOSED
