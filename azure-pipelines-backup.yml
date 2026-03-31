@@ -4,6 +4,13 @@
 
 trigger: none # No CI trigger - this pipeline runs on schedule only
 
+resources:
+  repositories:
+    - ${{ if ne(parameters.targetRepository, 'self') }}:
+      - repository: targetRepo
+        type: github
+        name: ${{ parameters.targetRepository }}
+
 schedules:
   - cron: "0 18 * * 1-5" # 18:00 UTC, Monday to Friday
     displayName: "Weekday 18:00 Semarchy Model Backup"
@@ -66,6 +73,12 @@ parameters:
 variables:
   - name: agentImage
     value: ubuntu-latest
+  - ${{ if eq(parameters.targetRepository, 'self') }}:
+    - name: checkoutDir
+      value: $(Build.SourcesDirectory)
+  - ${{ if ne(parameters.targetRepository, 'self') }}:
+    - name: checkoutDir
+      value: $(Pipeline.Workspace)/targetRepo
 
 stages:
   - stage: BackupModel
@@ -78,6 +91,10 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
+          - ${{ if ne(parameters.targetRepository, 'self') }}:
+            - checkout: targetRepo
+              clean: true
+              persistCredentials: true
           # Step 0: Retrieve Semarchy API Key from Azure Key Vault
           - task: AzureCLI@2
             displayName: "Fetch API Key from Key Vault"
@@ -235,7 +252,7 @@ stages:
               EXPORT_FILENAME="$(exportFilename)"
               BRANCH="${{ parameters.targetBranch }}"
 
-              cd "$(Build.SourcesDirectory)"
+              cd "$(checkoutDir)"
 
               git config user.email "github-platform-operations@HMCTS.NET"
               git config user.name "hmcts-platform-operations"
