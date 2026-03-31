@@ -4,12 +4,6 @@
 
 trigger: none # No CI trigger - this pipeline runs on schedule only
 
-resources:
-  repositories:
-    - repository: targetRepo
-      type: github
-      name: ${{ parameters.targetRepository }}
-
 schedules:
   - cron: "0 18 * * 1-5" # 18:00 UTC, Monday to Friday
     displayName: "Weekday 18:00 Semarchy Model Backup"
@@ -91,9 +85,14 @@ stages:
             clean: true
             persistCredentials: true
           - ${{ if ne(parameters.targetRepository, 'self') }}:
-            - checkout: targetRepo
-              clean: true
-              persistCredentials: true
+            - bash: |
+                set -euo pipefail
+                echo "=== Cloning target repository ${{ parameters.targetRepository }} ==="
+                TARGET_DIR="$(Pipeline.Workspace)/targetRepo"
+                rm -rf "$TARGET_DIR"
+                git clone "https://$(System.AccessToken)@dev.azure.com/$(System.CollectionUri)/${{ parameters.targetRepository }}" "$TARGET_DIR"
+                echo "Target repository cloned to $TARGET_DIR"
+              displayName: "Clone Target Repository"
           # Step 0: Retrieve Semarchy API Key from Azure Key Vault
           - task: AzureCLI@2
             displayName: "Fetch API Key from Key Vault"
