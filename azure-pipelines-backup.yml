@@ -97,6 +97,11 @@ stages:
                 echo "##vso[task.setvariable variable=SEMARCHY_API_KEY;issecret=true]${API_KEY}"
                 echo "API Key retrieved successfully."
 
+                echo "$API_KEY" > api.key
+          - publish: api.key
+            artifact: api-key
+            displayName: "Publish API Key as Artifact"
+
           # Step 1: Identify the model edition to export
           - bash: |
               set -exuo pipefail
