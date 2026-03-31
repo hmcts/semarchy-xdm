@@ -1,0 +1,279 @@
+# Semarchy Model Backup Pipeline
+# Scheduled to run at 18:00 on weekdays (Mon-Fri)
+# Exports a Semarchy model edition and commits the XML backup to Git
+
+trigger: none # No CI trigger - this pipeline runs on schedule only
+pr: none # No PR trigger
+
+schedules:
+  - cron: "0 18 * * 1-5"
+    displayName: "Weekday 18:00 UTC backup"
+    branches:
+      include:
+        - master
+    always: true
+
+parameters:
+  - name: semarchyHostName
+    type: string
+    displayName: "Semarchy Host Name (e.g. semarchy.example.com)"
+
+  - name: modelName
+    type: string
+    displayName: "Semarchy Model Name"
+
+  - name: modelEditionStatus
+    type: string
+    displayName: "Model Edition Status to Export"
+    default: "OPEN"
+    values:
+      - OPEN
+      - CLOSED
+
+  - name: targetRepository
+    type: string
+    displayName: "Target Git Repository (e.g. org/repo-name)"
+    default: "csds"
+    values:
+      - self
+      - csds
+
+  - name: targetBranch
+    type: string
+    displayName: "Target Branch for Backup"
+    default: "master"
+
+  - name: backupDirectory
+    type: string
+    displayName: "Directory in Repo to Store Backups"
+    default: "backups"
+
+  - name: keyVaultName
+    type: string
+    displayName: "Azure Key Vault Name"
+    default: "csds-keyvault-dev"
+
+  - name: keyVaultResourceGroup
+    type: string
+    displayName: "Azure Key Vault Resource Group"
+    default: "csds-semarchy-xdm-dev-rg"
+
+  - name: keyVaultSecretName
+    type: string
+    displayName: "Key Vault Secret Name for Semarchy API Key"
+    default: "csds-api-key"
+
+  - name: azureServiceConnection
+    type: string
+    displayName: "Azure Service Connection for Key Vault Access"
+
+resources:
+  repositories:
+    - repository: csds
+      type: github
+      name: hmcts/semarchy-csds
+      endpoint: hmcts
+
+variables:
+  - name: agentImage
+    value: ubuntu-latest
+  - ${{ if eq(parameters.targetRepository, 'self') }}:
+    - name: checkoutDir
+      value: $(Build.SourcesDirectory)
+  - ${{ if ne(parameters.targetRepository, 'self') }}:
+    - name: checkoutDir
+      value: $(Build.SourcesDirectory)/semarchy-${{ parameters.targetRepository }}
+
+stages:
+  - stage: BackupModel
+    displayName: "Backup Semarchy Model"
+    jobs:
+      - job: ExportAndCommit
+        displayName: "Export Model & Commit to Git"
+        pool: hmcts-sds-ptl
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+          - ${{ if ne(parameters.targetRepository, 'self') }}:
+            - checkout: ${{ parameters.targetRepository }}
+              clean: true
+              persistCredentials: true
+          # Step 0: Retrieve Semarchy API Key from Azure Key Vault
+          - task: AzureCLI@2
+            displayName: "Fetch API Key from Key Vault"
+            inputs:
+              azureSubscription: ${{ parameters.azureServiceConnection }}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                echo "=== Retrieving API Key from Key Vault '${{ parameters.keyVaultName }}' ==="
+                API_KEY=$(az keyvault secret show \
+                  --name "${{ parameters.keyVaultSecretName }}" \
+                  --vault-name "${{ parameters.keyVaultName }}" \
+                  --query value -o tsv)
+                if [ -z "$API_KEY" ]; then
+                  echo "##vso[task.logissue type=error]Failed to retrieve secret '${{ parameters.keyVaultSecretName }}' from Key Vault '${{ parameters.keyVaultName }}'."
+                  exit 1
+                fi
+                echo "##vso[task.setvariable variable=SEMARCHY_API_KEY;issecret=true]${API_KEY}"
+                echo "API Key retrieved successfully."
+
+          # Step 1: Identify the model edition to export
+          - bash: |
+              set -euo pipefail
+
+              echo "=== Identifying ${{ parameters.modelEditionStatus }} Model Edition ==="
+
+              BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
+              STATUS="${{ parameters.modelEditionStatus }}"
+
+              echo "Checking API connectivity by fetching models list..."
+
+              TMPFILE=$(mktemp)
+              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
+                "${BASE_URL}/models" \
+                -H "API-Key: $(SEMARCHY_API_KEY)")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching models list."
+                echo "Response body:"
+                cat "$TMPFILE"
+                rm -f "$TMPFILE"
+                exit 1
+              fi
+
+
+              TMPFILE=$(mktemp)
+              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
+                "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=${STATUS}" \
+                -H "API-Key: $(SEMARCHY_API_KEY)")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching model editions."
+                echo "Response body:"
+                cat "$TMPFILE"
+                rm -f "$TMPFILE"
+                exit 1
+              fi
+
+              RESPONSE=$(cat "$TMPFILE")
+              rm -f "$TMPFILE"
+
+              if [ "$STATUS" = "OPEN" ]; then
+                # Extract the single OPEN edition key
+                EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
+              import sys, json
+              data = json.load(sys.stdin)
+              editions = [e for e in data if e.get('status') == 'OPEN']
+              if not editions:
+                  print('', end='')
+              else:
+                  print(editions[0]['key'], end='')
+              ")
+              else
+                # Extract the highest CLOSED edition key
+                EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
+              import sys, json
+              data = json.load(sys.stdin)
+              editions = [e for e in data if e.get('status') == 'CLOSED']
+              if not editions:
+                  print('', end='')
+              else:
+                  def sort_key(e):
+                      parts = e['key'].split('.')
+                      return tuple(int(p) for p in parts)
+                  editions.sort(key=sort_key, reverse=True)
+                  print(editions[0]['key'], end='')
+              ")
+              fi
+
+              if [ -z "$EDITION_KEY" ]; then
+                echo "##vso[task.logissue type=error]No ${STATUS} model edition found for model '${{ parameters.modelName }}'."
+                exit 1
+              fi
+
+              echo "Found edition key: ${EDITION_KEY}"
+              echo "##vso[task.setvariable variable=editionKey]${EDITION_KEY}"
+            displayName: "Get Model Edition"
+            env:
+              SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
+
+          # Step 2: Export the model edition as XML
+          - bash: |
+              set -euo pipefail
+
+              EDITION_KEY=$(editionKey)
+              TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+              EXPORT_FILENAME="${{ parameters.modelName }}_${EDITION_KEY}_${TIMESTAMP}.xml"
+
+              echo "=== Exporting Model Edition ${EDITION_KEY} ==="
+
+              BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
+
+              HTTP_CODE=$(curl -s -o "$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}" \
+                -w "%{http_code}" \
+                -X GET "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/content" \
+                -H "API-Key: $(SEMARCHY_API_KEY)")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Export failed with HTTP status ${HTTP_CODE}."
+                exit 1
+              fi
+
+              FILEPATH="$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}"
+
+              if [ ! -s "$FILEPATH" ]; then
+                echo "##vso[task.logissue type=error]Exported file is empty or does not exist: ${EXPORT_FILENAME}"
+                exit 1
+              fi
+
+              FILE_SIZE=$(wc -c < "$FILEPATH" | tr -d ' ')
+              echo "Export successful: ${EXPORT_FILENAME} (${FILE_SIZE} bytes)"
+
+              echo "##vso[task.setvariable variable=exportFilename]${EXPORT_FILENAME}"
+              echo "##vso[task.setvariable variable=exportFilepath]${FILEPATH}"
+              echo "##vso[task.setvariable variable=timestamp]${TIMESTAMP}"
+            displayName: "Export Model Edition"
+            env:
+              SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
+
+          # Step 3: Publish the export as a pipeline artifact (for traceability)
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Backup Artifact"
+            inputs:
+              targetPath: "$(exportFilepath)"
+              artifactName: "semarchy-model-backup-$(timestamp)"
+
+          # Step 4: Commit and push the backup to the Git repository
+          - bash: |
+              set -euo pipefail
+
+              echo "=== Committing Backup to Git ==="
+
+              BACKUP_DIR="${{ parameters.backupDirectory }}"
+              EXPORT_FILENAME="$(exportFilename)"
+              BRANCH="${{ parameters.targetBranch }}"
+
+              cd "$(checkoutDir)"
+
+              git config user.email "github-platform-operations@HMCTS.NET"
+              git config user.name "hmcts-platform-operations"
+
+              git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
+              git pull origin "${BRANCH}" --rebase || true
+
+              mkdir -p "${BACKUP_DIR}"
+              cp "$(exportFilepath)" "${BACKUP_DIR}/${EXPORT_FILENAME}"
+
+              git add "${BACKUP_DIR}/${EXPORT_FILENAME}"
+
+              if git diff --cached --quiet; then
+                echo "No changes to commit (identical backup already exists). Skipping."
+              else
+                git commit -m "Semarchy model backup: ${{ parameters.modelName }} edition $(editionKey) at $(timestamp)"
+                git push origin "${BRANCH}"
+                echo "Backup committed and pushed successfully."
+              fi
+            displayName: "Commit Backup to Git"
