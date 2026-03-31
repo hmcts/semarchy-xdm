@@ -65,8 +65,6 @@ resources:
       name: hmcts/semarchy-csds
       endpoint: hmcts
 
-schedules:
-
 variables:
   - name: agentImage
     value: ubuntu-latest
