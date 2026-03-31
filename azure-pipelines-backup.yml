@@ -73,7 +73,7 @@ variables:
       value: $(Build.SourcesDirectory)
   - ${{ if ne(parameters.targetRepository, 'self') }}:
     - name: checkoutDir
-      value: $(Build.SourcesDirectory)/${{ parameters.targetRepository }}
+      value: $(Build.SourcesDirectory)/semarchy-${{ parameters.targetRepository }}
 
 stages:
   - stage: BackupModel
