@@ -73,8 +73,7 @@ stages:
     jobs:
       - job: ExportAndCommit
         displayName: "Export Model & Commit to Git"
-        pool:
-          vmImage: $(agentImage)
+        pool: hmcts-sds-ptl
         steps:
           # Step 0: Retrieve Semarchy API Key from Azure Key Vault
           - task: AzureCLI@2
@@ -99,7 +98,7 @@ stages:
 
           # Step 1: Identify the model edition to export
           - bash: |
-              set -exuo pipefail
+              set -euo pipefail
 
               echo "=== Identifying ${{ parameters.modelEditionStatus }} Model Edition ==="
 
@@ -179,7 +178,7 @@ stages:
 
           # Step 2: Export the model edition as XML
           - bash: |
-              set -exuo pipefail
+              set -euo pipefail
 
               EDITION_KEY=$(editionKey)
               TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
@@ -235,8 +234,8 @@ stages:
 
               cd "$(Build.SourcesDirectory)"
 
-              git config user.email "azure-pipelines@dev.azure.com"
-              git config user.name "Azure Pipelines - Semarchy Backup"
+              git config user.email "github-platform-operations@HMCTS.NET"
+              git config user.name "hmcts-platform-operations"
 
               git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
               git pull origin "${BRANCH}" --rebase || true
