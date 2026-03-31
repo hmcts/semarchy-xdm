@@ -3,6 +3,7 @@
 # Exports a Semarchy model edition and commits the XML backup to Git
 
 trigger: none # No CI trigger - this pipeline runs on schedule only
+pr: none # No PR trigger
 
 schedules:
   - cron: "0 18 * * 1-5"
