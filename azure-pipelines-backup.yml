@@ -90,7 +90,7 @@ stages:
                 echo "=== Cloning target repository ${{ parameters.targetRepository }} ==="
                 TARGET_DIR="$(Pipeline.Workspace)/targetRepo"
                 rm -rf "$TARGET_DIR"
-                git clone "https://$(System.AccessToken)@dev.azure.com/$(System.CollectionUri)/${{ parameters.targetRepository }}" "$TARGET_DIR"
+                git clone "https://github.com/${{ parameters.targetRepository }}.git" "$TARGET_DIR"
                 echo "Target repository cloned to $TARGET_DIR"
               displayName: "Clone Target Repository"
           # Step 0: Retrieve Semarchy API Key from Azure Key Vault
