@@ -98,6 +98,7 @@ locals {
     { name = "SPRING_DATASOURCE_HIKARI_VALIDATIONTIMEOUT", value = "5000" },
     { name = "SPRING_DATASOURCE_HIKARI_MINIMUMIDLE", value = "2" },
     { name = "CATALINA_OPTS", value = "-DallowXForwardedHeaders=true" },
+    { name = "JAVA_OPTS", value = "-Duser.timezone=Europe/London" },
   ]
 
   user_env_var_names = toset([for env_var in var.container_env_vars : env_var.name])
