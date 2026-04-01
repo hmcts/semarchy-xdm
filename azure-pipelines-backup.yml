@@ -10,7 +10,7 @@ schedules:
     displayName: "Weekday 18:00 UTC backup"
     branches:
       include:
-        - master
+        - main
     always: true
 
 parameters:
