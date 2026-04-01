@@ -66,6 +66,7 @@ parameters:
   - name: azureServiceConnection
     type: string
     displayName: "Azure Service Connection for Key Vault Access"
+    default: "DCD-CFTAPPS-DEV"
 
 resources:
   repositories:
