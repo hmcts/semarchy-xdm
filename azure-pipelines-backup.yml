@@ -17,10 +17,12 @@ parameters:
   - name: semarchyHostName
     type: string
     displayName: "Semarchy Host Name (e.g. semarchy.example.com)"
+    default: "csds.dev.apps.hmcts.net"
 
   - name: modelName
     type: string
     displayName: "Semarchy Model Name"
+    default: "CSDS"
 
   - name: modelEditionStatus
     type: string
