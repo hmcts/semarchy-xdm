@@ -107,17 +107,17 @@ variables:
       value: "DCD-CFTAPPS-PROD"
 
 stages:
-  # =========================================================================
-  # Stage 1 - Validate Parameters
-  # =========================================================================
-  - stage: Validate
-    displayName: "Validate Parameters"
+  - stage: DeployModel
+    displayName: "Deploy ${{ parameters.modelName }} from ${{ parameters.sourceEnvironment }} to ${{ parameters.targetEnvironment }}"
     jobs:
-      - job: ValidateInputs
-        displayName: "Check source != target"
-        pool:
-          vmImage: ubuntu-latest
+      - job: DeployModel
+        displayName: "Validate > Export > Import > Deploy"
+        pool: hmcts-sds-ptl
         steps:
+          - checkout: self
+            clean: true
+
+          # -- Step 1: Validate parameters --
           - bash: |
               set -euo pipefail
               SOURCE="${{ parameters.sourceEnvironment }}"
@@ -137,21 +137,7 @@ stages:
               echo "  Data location: ${{ parameters.dataLocationName }}"
             displayName: "Validate Parameters"
 
-  # =========================================================================
-  # Stage 2 - Export from Source
-  # =========================================================================
-  - stage: ExportFromSource
-    displayName: "Export from ${{ parameters.sourceEnvironment }}"
-    dependsOn: Validate
-    jobs:
-      - job: Export
-        displayName: "Identify > Close (optional) > Export"
-        pool: hmcts-sds-ptl
-        steps:
-          - checkout: self
-            clean: true
-
-          # -- Retrieve source API key from Azure Key Vault --
+          # -- Step 2: Retrieve source API key from Azure Key Vault --
           - task: AzureCLI@2
             displayName: "Fetch Source API Key"
             inputs:
@@ -172,7 +158,28 @@ stages:
                 echo "##vso[task.setvariable variable=SOURCE_API_KEY;issecret=true]${API_KEY}"
                 echo "Source API key retrieved successfully."
 
-          # -- Identify the model edition to export --
+          # -- Step 3: Retrieve target API key from Azure Key Vault --
+          - task: AzureCLI@2
+            displayName: "Fetch Target API Key"
+            inputs:
+              azureSubscription: $(targetServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                echo "=== Retrieving API Key from Key Vault 'csds-keyvault-${{ parameters.targetEnvironment }}' ==="
+                API_KEY=$(az keyvault secret show \
+                  --name "csds-api-key" \
+                  --vault-name "csds-keyvault-${{ parameters.targetEnvironment }}" \
+                  --query value -o tsv)
+                if [ -z "$API_KEY" ]; then
+                  echo "##vso[task.logissue type=error]Failed to retrieve target API key from 'csds-keyvault-${{ parameters.targetEnvironment }}'."
+                  exit 1
+                fi
+                echo "##vso[task.setvariable variable=TARGET_API_KEY;issecret=true]${API_KEY}"
+                echo "Target API key retrieved successfully."
+
+          # -- Step 4: Identify the model edition to export --
           - bash: |
               set -euo pipefail
 
@@ -242,19 +249,18 @@ stages:
               fi
 
               echo "Identified edition key: ${EDITION_KEY}"
-              echo "##vso[task.setvariable variable=editionKey;isOutput=true]${EDITION_KEY}"
-            name: getEdition
+              echo "##vso[task.setvariable variable=EDITION_KEY]${EDITION_KEY}"
             displayName: "Identify Model Edition"
             env:
               SOURCE_API_KEY: $(SOURCE_API_KEY)
 
-          # -- Close the model edition (conditional - only when closeModel is true) --
+          # -- Step 5: Close the model edition (conditional - only when closeModel is true) --
           - ${{ if eq(parameters.closeModel, true) }}:
             - bash: |
                 set -euo pipefail
 
                 BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
-                EDITION_KEY="$(getEdition.editionKey)"
+                EDITION_KEY="$(EDITION_KEY)"
 
                 echo "=== Closing model edition ${EDITION_KEY} on ${{ parameters.sourceEnvironment }} ==="
 
@@ -293,12 +299,12 @@ stages:
               env:
                 SOURCE_API_KEY: $(SOURCE_API_KEY)
 
-          # -- Export the model edition as XML --
+          # -- Step 6: Export the model edition as XML --
           - bash: |
               set -euo pipefail
 
               BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
-              EDITION_KEY="$(getEdition.editionKey)"
+              EDITION_KEY="$(EDITION_KEY)"
               TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
               EXPORT_FILE="${{ parameters.modelName }}_${EDITION_KEY}_${TIMESTAMP}.xml"
               FILEPATH="$(Build.ArtifactStagingDirectory)/${EXPORT_FILE}"
@@ -322,78 +328,30 @@ stages:
               FILE_SIZE=$(wc -c < "${FILEPATH}" | tr -d ' ')
               echo "Export successful: ${EXPORT_FILE} (${FILE_SIZE} bytes)"
 
-              echo "##vso[task.setvariable variable=exportFilename;isOutput=true]${EXPORT_FILE}"
-              echo "##vso[task.setvariable variable=exportFilepath;isOutput=true]${FILEPATH}"
-              echo "##vso[task.setvariable variable=timestamp;isOutput=true]${TIMESTAMP}"
-            name: exportModel
+              echo "##vso[task.setvariable variable=EXPORT_FILEPATH]${FILEPATH}"
+              echo "##vso[task.setvariable variable=TIMESTAMP]${TIMESTAMP}"
             displayName: "Export Model Edition"
             env:
               SOURCE_API_KEY: $(SOURCE_API_KEY)
 
-          # -- Publish the export as a pipeline artifact --
+          # -- Step 7: Publish the export as a pipeline artifact --
           - task: PublishPipelineArtifact@1
             displayName: "Publish Model Export Artifact"
             inputs:
-              targetPath: "$(exportModel.exportFilepath)"
-              artifactName: "semarchy-model-export-$(exportModel.timestamp)"
+              targetPath: "$(EXPORT_FILEPATH)"
+              artifactName: "semarchy-model-export-$(TIMESTAMP)"
 
-  # =========================================================================
-  # Stage 3 - Import & Deploy to Target
-  # =========================================================================
-  - stage: ImportToTarget
-    displayName: "Import & Deploy to ${{ parameters.targetEnvironment }}"
-    dependsOn: ExportFromSource
-    variables:
-      editionKey: $[ stageDependencies.ExportFromSource.Export.outputs['getEdition.editionKey'] ]
-      exportFilename: $[ stageDependencies.ExportFromSource.Export.outputs['exportModel.exportFilename'] ]
-      timestamp: $[ stageDependencies.ExportFromSource.Export.outputs['exportModel.timestamp'] ]
-    jobs:
-      - job: ImportAndDeploy
-        displayName: "Import > Deploy"
-        pool: hmcts-sds-ptl
-        steps:
-          # -- Download the exported model artifact --
-          - task: DownloadPipelineArtifact@2
-            displayName: "Download Model Export"
-            inputs:
-              artifactName: "semarchy-model-export-$(timestamp)"
-              targetPath: "$(Pipeline.Workspace)/model-export"
-
-          # -- Retrieve target API key from Azure Key Vault --
-          - task: AzureCLI@2
-            displayName: "Fetch Target API Key"
-            inputs:
-              azureSubscription: $(targetServiceConnection)
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
-                set -euo pipefail
-                echo "=== Retrieving API Key from Key Vault 'csds-keyvault-${{ parameters.targetEnvironment }}' ==="
-                API_KEY=$(az keyvault secret show \
-                  --name "csds-api-key" \
-                  --vault-name "csds-keyvault-${{ parameters.targetEnvironment }}" \
-                  --query value -o tsv)
-                if [ -z "$API_KEY" ]; then
-                  echo "##vso[task.logissue type=error]Failed to retrieve target API key from 'csds-keyvault-${{ parameters.targetEnvironment }}'."
-                  exit 1
-                fi
-                echo "##vso[task.setvariable variable=TARGET_API_KEY;issecret=true]${API_KEY}"
-                echo "Target API key retrieved successfully."
-
-          # -- Import model edition into target --
+          # -- Step 8: Import model edition into target --
           - bash: |
               set -euo pipefail
 
               BASE_URL="$(targetHostUrl)/api/rest/app-builder"
-              EDITION_KEY="$(editionKey)"
-              EXPORT_FILE="$(Pipeline.Workspace)/model-export/$(exportFilename)"
+              EXPORT_FILE="$(EXPORT_FILEPATH)"
 
               echo "=== Importing edition into ${{ parameters.targetEnvironment }} ==="
 
               if [ ! -s "${EXPORT_FILE}" ]; then
                 echo "##vso[task.logissue type=error]Export file not found or empty: ${EXPORT_FILE}"
-                echo "Contents of download directory:"
-                ls -la "$(Pipeline.Workspace)/model-export/" || true
                 exit 1
               fi
 
@@ -413,12 +371,12 @@ stages:
             env:
               TARGET_API_KEY: $(TARGET_API_KEY)
 
-          # -- Deploy the model on the target data location --
+          # -- Step 9: Deploy the model on the target data location --
           - bash: |
               set -euo pipefail
 
               BASE_URL="$(targetHostUrl)/api/rest/app-builder"
-              EDITION_KEY="$(editionKey)"
+              EDITION_KEY="$(EDITION_KEY)"
 
               echo "=== Deploying ${{ parameters.modelName }} edition ${EDITION_KEY} to data location '${{ parameters.dataLocationName }}' on ${{ parameters.targetEnvironment }} ==="
 
