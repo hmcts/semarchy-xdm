@@ -251,7 +251,7 @@ stages:
           # -- Close the model edition (conditional - only when closeModel is true) --
           - ${{ if eq(parameters.closeModel, true) }}:
             - bash: |
-                set -exuo pipefail
+                set -euo pipefail
 
                 BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
                 EDITION_KEY="$(getEdition.editionKey)"
@@ -388,7 +388,7 @@ stages:
               EDITION_KEY="$(editionKey)"
               EXPORT_FILE="$(Pipeline.Workspace)/model-export/$(exportFilename)"
 
-              echo "=== Importing edition ${EDITION_KEY} into ${{ parameters.targetEnvironment }} ==="
+              echo "=== Importing edition into ${{ parameters.targetEnvironment }} ==="
 
               if [ ! -s "${EXPORT_FILE}" ]; then
                 echo "##vso[task.logissue type=error]Export file not found or empty: ${EXPORT_FILE}"
@@ -397,23 +397,18 @@ stages:
                 exit 1
               fi
 
-              TMPFILE=$(mktemp)
-              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" \
-                -X POST "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/content" \
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${BASE_URL}/model-imports" \
                 -H "Content-Type: application/octet-stream" \
                 -H "API-Key: ${TARGET_API_KEY}" \
                 --data-binary @"${EXPORT_FILE}")
 
-              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                echo "##vso[task.logissue type=error]Import failed with HTTP ${HTTP_CODE}."
-                echo "Response body:"; cat "$TMPFILE"
-                rm -f "$TMPFILE"; exit 1
+              if [ "$HTTP_CODE" != "303" ]; then
+                echo "##vso[task.logissue type=error]Import failed. Expected HTTP 303 but got ${HTTP_CODE}."
+                exit 1
               fi
 
-              RESPONSE=$(cat "$TMPFILE")
-              rm -f "$TMPFILE"
-              echo "Import response: ${RESPONSE}"
-              echo "Model edition ${EDITION_KEY} imported successfully into ${{ parameters.targetEnvironment }}."
+              echo "Import successful (HTTP 303). Model edition imported into ${{ parameters.targetEnvironment }}."
             displayName: "Import Model Edition"
             env:
               TARGET_API_KEY: $(TARGET_API_KEY)
