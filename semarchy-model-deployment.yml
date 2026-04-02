@@ -343,7 +343,7 @@ stages:
 
           # -- Step 8: Import model edition into target --
           - bash: |
-              set -euo pipefail
+              set -exuo pipefail
 
               BASE_URL="$(targetHostUrl)/api/rest/app-builder"
               EXPORT_FILE="$(EXPORT_FILEPATH)"
@@ -373,7 +373,7 @@ stages:
 
           # -- Step 9: Deploy the model on the target data location --
           - bash: |
-              set -euo pipefail
+              set -exuo pipefail
 
               BASE_URL="$(targetHostUrl)/api/rest/app-builder"
               EDITION_KEY="$(EDITION_KEY)"
