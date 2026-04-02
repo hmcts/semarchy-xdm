@@ -251,7 +251,7 @@ stages:
           # -- Close the model edition (conditional - only when closeModel is true) --
           - ${{ if eq(parameters.closeModel, true) }}:
             - bash: |
-                set -euo pipefail
+                set -exuo pipefail
 
                 BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
                 EDITION_KEY="$(getEdition.editionKey)"
