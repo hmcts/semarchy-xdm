@@ -201,11 +201,11 @@ stages:
                 fi
 
                 EDITION_KEY=$(cat "$TMPFILE" | python3 -c "
-              import sys, json
-              data = json.load(sys.stdin)
-              editions = [e for e in data if e.get('status') == 'OPEN']
-              print(editions[0]['key'] if editions else '', end='')
-              ")
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'OPEN']
+                print(editions[0]['key'] if editions else '', end='')
+                ")
                 rm -f "$TMPFILE"
 
               else
@@ -224,15 +224,15 @@ stages:
                 fi
 
                 EDITION_KEY=$(cat "$TMPFILE" | python3 -c "
-              import sys, json
-              data = json.load(sys.stdin)
-              editions = [e for e in data if e.get('status') == 'CLOSED']
-              if not editions:
-                  print('', end='')
-              else:
-                  editions.sort(key=lambda e: tuple(int(p) for p in e['key'].split('.')), reverse=True)
-                  print(editions[0]['key'], end='')
-              ")
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'CLOSED']
+                if not editions:
+                    print('', end='')
+                else:
+                    editions.sort(key=lambda e: tuple(int(p) for p in e['key'].split('.')), reverse=True)
+                    print(editions[0]['key'], end='')
+                ")
                 rm -f "$TMPFILE"
               fi
 
@@ -279,11 +279,11 @@ stages:
                   -H "API-Key: ${SOURCE_API_KEY}"
 
                 NEW_OPEN=$(cat "$TMPFILE" | python3 -c "
-              import sys, json
-              data = json.load(sys.stdin)
-              editions = [e for e in data if e.get('status') == 'OPEN']
-              print(editions[0]['key'] if editions else '', end='')
-              " 2>/dev/null || echo "")
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'OPEN']
+                print(editions[0]['key'] if editions else '', end='')
+                " 2>/dev/null || echo "")
                 rm -f "$TMPFILE"
 
                 if [ -n "$NEW_OPEN" ]; then
