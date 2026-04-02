@@ -258,19 +258,17 @@ stages:
 
                 echo "=== Closing model edition ${EDITION_KEY} on ${{ parameters.sourceEnvironment }} ==="
 
-                TMPFILE=$(mktemp)
-                HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" \
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
                   -X POST "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/close" \
                   -H "Content-Type: application/json" \
                   -H "API-Key: ${SOURCE_API_KEY}" \
                   --data "{\"description\": \"Closing edition ${EDITION_KEY} for deployment to ${{ parameters.targetEnvironment }}.\"}")
 
-                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                  echo "##vso[task.logissue type=error]Close failed with HTTP ${HTTP_CODE}."
-                  echo "Response body:"; cat "$TMPFILE"
-                  rm -f "$TMPFILE"; exit 1
+                if [ "$HTTP_CODE" != "303" ]; then
+                  echo "##vso[task.logissue type=error]Close failed. Expected HTTP 303 but got ${HTTP_CODE}."
+                  exit 1
                 fi
-                rm -f "$TMPFILE"
+                echo "Close request returned HTTP 303 (success)."
 
                 # Verify: a new OPEN edition should now exist (confirming the close succeeded)
                 TMPFILE=$(mktemp)
