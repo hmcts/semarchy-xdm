@@ -41,6 +41,7 @@ parameters:
         component: "container-app"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn:
+          - "AppBuildPublish"
           - "sandbox_core"
           - "sandbox_database"
       - deployment: "dev_core"
