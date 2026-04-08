@@ -52,3 +52,8 @@ container_env_vars = [
 ]
 
 postgres_storage_mb = 131072
+
+pss_test_harness = {
+  enabled = true
+  image   = "hmctsprod.azurecr.io/csds/pss-test-harness:feat-test-harness-deployment"
+}
