@@ -50,7 +50,7 @@ variable "passive_container_image" {
 variable "pss_test_harness" {
   type = object({
     enabled                  = optional(bool, false)
-    image                    = string
+    image                    = optional(string, "hmctsprod.azurecr.io/csds/pss-test-harness:main")
     cpu                      = optional(number, 0.25)
     memory                   = optional(string, "1Gi")
     target_port              = optional(number, 3000)
