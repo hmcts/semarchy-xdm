@@ -2,7 +2,7 @@ locals {
   deploy_test_harness = var.pss_test_harness != null && var.pss_test_harness.enabled && var.pss_test_harness.image != ""
 
   test_harness_container_app = local.deploy_test_harness ? {
-    "test-harness" = {
+    "pss" = {
       workload_profile_name = "Consumption"
       containers = {
         "${var.component}-test-harness" = {
