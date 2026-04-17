@@ -24,3 +24,5 @@ active_application_environment_certificate_key_vault_secret_id  = "https://acmed
 passive_application_environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/csds-passive-apps-hmcts-net"
 
 admin_group = "DTS Crime Standing Data Service Admin (env:prod)"
+
+postgres_storage_mb = 131072

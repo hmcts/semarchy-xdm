@@ -48,3 +48,5 @@ container_env_vars = [
   { name = "XDM_REPOSITORY_USERNAME", secret_name = "xdm-repo-username" },
   { name = "XDM_REPOSITORY_PASSWORD", secret_name = "xdm-repo-password" },
 ]
+
+postgres_storage_mb = 131072
