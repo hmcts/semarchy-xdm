@@ -22,6 +22,8 @@ module "postgresql" {
   name                = "csds-postgresql"
   resource_group_name = var.resource_group_name
   high_availability   = contains(["stg", "prod"], var.env) ? true : false
+  charset             = "UTF8"
+  collation           = "en_US.utf8"
 
   pgsql_databases = [
     {

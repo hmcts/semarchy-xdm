@@ -41,6 +41,7 @@ parameters:
         component: "container-app"
         service_connection: "DCD-CFTAPPS-SBOX"
         dependsOn:
+          - "AppBuildPublish"
           - "sandbox_core"
           - "sandbox_database"
       - deployment: "dev_core"
@@ -114,9 +115,50 @@ variables:
   - name: terraformInitSubscription
     value: 04d27a32-7a07-48b3-95b8-3c8691e1a263
   - template: vars/input-variables.yaml@cnp-azuredevops-libraries
+  - name: imageRepository
+    value: csds/pss-test-harness
 
 stages:
+  - stage: AppBuildPublish
+    displayName: "App Build & Publish"
+    jobs:
+      - job: BuildAndPublish
+        pool:
+          vmImage: ${{ variables.agentImage }}
+        steps:
+          - task: AzureCLI@2
+            displayName: "Build and push Docker image to ACR (az acr build)"
+            inputs:
+              azureSubscription: DCD-CNP-Prod
+              scriptType: bash
+              scriptLocation: inlineScript
+              workingDirectory: $(System.DefaultWorkingDirectory)/PSSTestHarness
+              inlineScript: |
+                echo "Starting ACR build for $(imageRepository)"
+
+                # Determine the correct branch name
+                if [ "$(Build.Reason)" = "PullRequest" ]; then
+                  BRANCH_NAME="$(System.PullRequest.SourceBranch)"
+                else
+                  BRANCH_NAME="$(Build.SourceBranch)"
+                fi
+
+                # Remove refs/heads/ prefix if present
+                BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
+
+                # Replace / with - for valid Docker tag names
+                BRANCH_NAME="${BRANCH_NAME//\//-}"
+
+                echo "Using branch name: $BRANCH_NAME"
+
+                az acr build --registry hmctsprod \
+                  -t $(imageRepository):$(Build.BuildId) \
+                  -t $(imageRepository):$BRANCH_NAME \
+                  -t $(imageRepository):$BRANCH_NAME-$(Build.BuildId) \
+                  .
+
   - stage: Precheck
+    dependsOn: []
     jobs:
       - job:
         pool:

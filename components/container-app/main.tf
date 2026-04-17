@@ -1,3 +1,35 @@
+locals {
+  deploy_test_harness = var.pss_test_harness != null && var.pss_test_harness.enabled && var.pss_test_harness.image != ""
+
+  test_harness_container_app = local.deploy_test_harness ? {
+    "pss" = {
+      workload_profile_name = "Consumption"
+      containers = {
+        "${var.component}-test-harness" = {
+          image  = var.pss_test_harness.image
+          cpu    = var.pss_test_harness.cpu
+          memory = var.pss_test_harness.memory
+          env = [
+            {
+              name  = "PORT"
+              value = tostring(var.pss_test_harness.target_port)
+            }
+          ]
+        }
+      }
+
+      ingress_enabled                    = true
+      ingress_external_enabled           = var.pss_test_harness.ingress_external_enabled
+      ingress_target_port                = var.pss_test_harness.target_port
+      ingress_allow_insecure_connections = true
+      ingress_transport                  = "auto"
+
+      min_replicas = var.pss_test_harness.min_replicas
+      max_replicas = var.pss_test_harness.max_replicas
+    }
+  } : {}
+}
+
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
@@ -43,85 +75,88 @@ module "container_app" {
     }
   }
 
-  container_apps = {
-    active = {
-      workload_profile_name = "dedicated"
-      containers = {
-        "${var.component}-active" = {
-          image  = var.active_container_image
-          cpu    = var.container_cpu
-          memory = var.container_memory
-          env    = local.env_vars
+  container_apps = merge(
+    {
+      active = {
+        workload_profile_name = "dedicated"
+        containers = {
+          "${var.component}-active" = {
+            image  = var.active_container_image
+            cpu    = var.container_cpu
+            memory = var.container_memory
+            env    = local.env_vars
 
-          volume_mounts = {
-            semarchyconf = {
-              path     = "/usr/local/tomcat/conf/server.xml"
-              sub_path = "server.xml"
+            volume_mounts = {
+              semarchyconf = {
+                path     = "/usr/local/tomcat/conf/server.xml"
+                sub_path = "server.xml"
+              }
             }
           }
         }
-      }
 
-      ingress_enabled          = var.ingress_enabled
-      ingress_external_enabled = var.ingress_external_enabled
-      ingress_target_port      = var.ingress_target_port
-      # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
-      ingress_allow_insecure_connections = true
-      ingress_transport                  = "auto"
+        ingress_enabled          = var.ingress_enabled
+        ingress_external_enabled = var.ingress_external_enabled
+        ingress_target_port      = var.ingress_target_port
+        # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
+        ingress_allow_insecure_connections = true
+        ingress_transport                  = "auto"
 
-      // Only one instance of the "active" component should run.
-      min_replicas = 1
-      max_replicas = 1
+        // Only one instance of the "active" component should run.
+        min_replicas = 1
+        max_replicas = 1
 
-      key_vault_secrets = local.secrets
+        key_vault_secrets = local.secrets
 
-      custom_domain = {
-        fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
-        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
-        zone_resource_group_name    = "reformMgmtRG"
-        environment_certificate_key = "csds-active-${var.env}-cert"
-        private_dns_zone            = local.private_dns_zone
-      }
+        custom_domain = {
+          fqdn                        = "csds-active.${local.env_map[var.env]}.platform.hmcts.net"
+          zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+          zone_resource_group_name    = "reformMgmtRG"
+          environment_certificate_key = "csds-active-${var.env}-cert"
+          private_dns_zone            = local.private_dns_zone
+        }
 
-      volumes = {
-        semarchyconf = {
-          storage_name = "semarchyconf"
-          storage_type = "AzureFile"
+        volumes = {
+          semarchyconf = {
+            storage_name = "semarchyconf"
+            storage_type = "AzureFile"
+          }
         }
       }
-    }
-    passive = {
-      workload_profile_name = "dedicated"
-      containers = {
-        "${var.component}-passive" = {
-          image  = var.passive_container_image
-          cpu    = var.container_cpu
-          memory = var.container_memory
-          env    = local.env_vars
+      passive = {
+        workload_profile_name = "dedicated"
+        containers = {
+          "${var.component}-passive" = {
+            image  = var.passive_container_image
+            cpu    = var.container_cpu
+            memory = var.container_memory
+            env    = local.env_vars
+          }
+        }
+
+        ingress_enabled          = var.ingress_enabled
+        ingress_external_enabled = var.ingress_external_enabled
+        ingress_target_port      = var.ingress_target_port
+        # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
+        ingress_allow_insecure_connections = true
+        ingress_transport                  = "auto"
+
+        min_replicas = var.passive_min_replicas
+        max_replicas = var.passive_max_replicas
+
+        key_vault_secrets = local.secrets
+
+        custom_domain = {
+          fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
+          zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+          zone_resource_group_name    = "reformMgmtRG"
+          environment_certificate_key = "csds-passive-${var.env}-cert"
+          private_dns_zone            = local.private_dns_zone
         }
       }
-
-      ingress_enabled          = var.ingress_enabled
-      ingress_external_enabled = var.ingress_external_enabled
-      ingress_target_port      = var.ingress_target_port
-      # Required until E2ETLS working via FS is completed (i.e needs private link service to function)
-      ingress_allow_insecure_connections = true
-      ingress_transport                  = "auto"
-
-      min_replicas = var.passive_min_replicas
-      max_replicas = var.passive_max_replicas
-
-      key_vault_secrets = local.secrets
-
-      custom_domain = {
-        fqdn                        = "csds-passive.${local.env_map[var.env]}.platform.hmcts.net"
-        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
-        zone_resource_group_name    = "reformMgmtRG"
-        environment_certificate_key = "csds-passive-${var.env}-cert"
-        private_dns_zone            = local.private_dns_zone
-      }
-    }
-  }
+    },
+    local.test_harness_container_app
+  )
 }
 
 resource "azurerm_key_vault_access_policy" "container_app" {
