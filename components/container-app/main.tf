@@ -23,11 +23,28 @@ locals {
       ingress_target_port                = var.pss_test_harness.target_port
       ingress_allow_insecure_connections = true
       ingress_transport                  = "auto"
+      registry_server                    = "hmctsprod.azurecr.io"
+      registry_identity_id               = azurerm_user_assigned_identity.acr_pull.id
 
       min_replicas = var.pss_test_harness.min_replicas
       max_replicas = var.pss_test_harness.max_replicas
     }
   } : {}
+}
+
+resource "azurerm_user_assigned_identity" "acr_pull" {
+  count               = local.deploy_test_harness ? 1 : 0
+  name                = "csds-${var.env}-acr-pull-uami"
+  location            = data.azurerm_resource_group.core.location
+  resource_group_name = data.azurerm_resource_group.core.name
+  tags                = module.ctags.common_tags
+}
+
+resource "azurerm_role_assignment" "acr_pull" {
+  provider             = azurerm.acr
+  scope                = local.acr_registry_id
+  role_definition_name = "AcrPull"
+  principal_id         = azurerm_user_assigned_identity.acr_pull.principal_id
 }
 
 module "container_app" {

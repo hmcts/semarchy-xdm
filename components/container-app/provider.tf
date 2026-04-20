@@ -24,3 +24,9 @@ provider "azurerm" {
   features {}
   subscription_id = local.private_dns_sub_id
 }
+
+provider "azurerm" {
+  alias = "acr"
+  features {}
+  subscription_id = local.acr_subscription_id
+}

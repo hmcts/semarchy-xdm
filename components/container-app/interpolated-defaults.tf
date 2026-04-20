@@ -36,8 +36,11 @@ data "azurerm_log_analytics_workspace" "main" {
 }
 
 locals {
-  dns_sub_id         = "ed302caf-ec27-4c64-a05e-85731c3ce90e"
-  private_dns_sub_id = var.env == "sbox" ? "1497c3d7-ab6d-4bb7-8a10-b51d03189ee3" : "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
+  dns_sub_id          = "ed302caf-ec27-4c64-a05e-85731c3ce90e"
+  acr_subscription_id = "8999dec3-0104-4a27-94ee-6588559729d1"
+  private_dns_sub_id  = var.env == "sbox" ? "1497c3d7-ab6d-4bb7-8a10-b51d03189ee3" : "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
+
+  acr_registry_id = "/subscriptions/8999dec3-0104-4a27-94ee-6588559729d1/resourceGroups/rpe-acr-prod-rg/providers/Microsoft.ContainerRegistry/registries/hmctsprod"
 
   private_dns_zone = {
     name                = "${local.env_map[var.env]}.platform.hmcts.net"
