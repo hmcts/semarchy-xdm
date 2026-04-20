@@ -45,7 +45,7 @@ resource "azurerm_role_assignment" "acr_pull" {
   provider             = azurerm.acr
   scope                = local.acr_registry_id
   role_definition_name = "AcrPull"
-  principal_id         = azurerm_user_assigned_identity.acr_pull.principal_id
+  principal_id         = azurerm_user_assigned_identity.acr_pull[0].principal_id
 }
 
 module "container_app" {
