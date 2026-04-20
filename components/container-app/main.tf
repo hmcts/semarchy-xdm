@@ -24,7 +24,7 @@ locals {
       ingress_allow_insecure_connections = true
       ingress_transport                  = "auto"
       registry_server                    = "hmctsprod.azurecr.io"
-      registry_identity_id               = azurerm_user_assigned_identity.acr_pull.id
+      registry_identity_id               = azurerm_user_assigned_identity.acr_pull[0].id
 
       min_replicas = var.pss_test_harness.min_replicas
       max_replicas = var.pss_test_harness.max_replicas
@@ -41,6 +41,7 @@ resource "azurerm_user_assigned_identity" "acr_pull" {
 }
 
 resource "azurerm_role_assignment" "acr_pull" {
+  count                = local.deploy_test_harness ? 1 : 0
   provider             = azurerm.acr
   scope                = local.acr_registry_id
   role_definition_name = "AcrPull"
@@ -49,6 +50,8 @@ resource "azurerm_role_assignment" "acr_pull" {
 
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
+
+  depends_on = [azurerm_user_assigned_identity.acr_pull, azurerm_role_assignment.acr_pull]
 
   providers = {
     azurerm             = azurerm
