@@ -1,0 +1,410 @@
+# Semarchy XDM Model Deployment Pipeline
+# Moves a model edition from a source environment to a target environment.
+#
+# Process:
+#   1. Retrieve API keys from Azure Key Vault (source & target)
+#   2. Identify the model edition on the source (auto-detect or explicit)
+#   3. Optionally close the model edition on the source
+#   4. Export the model edition XML from the source
+#   5. Import the model edition XML into the target
+#   6. Deploy the model on the target data location
+
+trigger: none # Manual trigger only
+
+parameters:
+  - name: sourceEnvironment
+    type: string
+    displayName: "Source Environment"
+    values:
+      - sbox
+      - dev
+      - stg
+      - prod
+
+  - name: targetEnvironment
+    type: string
+    displayName: "Target Environment"
+    values:
+      - sbox
+      - dev
+      - stg
+      - prod
+
+  - name: modelName
+    type: string
+    displayName: "Semarchy Model Name"
+
+  - name: closeModel
+    type: boolean
+    displayName: "Close the model edition before export?"
+    default: false
+
+  - name: version
+    type: string
+    displayName: "Model Edition Key (e.g. 0.0) - leave blank to auto-detect"
+    default: ""
+
+  - name: dataLocationName
+    type: string
+    displayName: "Target Data Location Name for deployment"
+
+# -- Environment-specific variables (resolved at compile time) --
+variables:
+  # Source host URL
+  - ${{ if eq(parameters.sourceEnvironment, 'sbox') }}:
+    - name: sourceHostUrl
+      value: "https://csds.sandbox.apps.hmcts.net"
+  - ${{ if eq(parameters.sourceEnvironment, 'dev') }}:
+    - name: sourceHostUrl
+      value: "https://csds.dev.apps.hmcts.net"
+  - ${{ if eq(parameters.sourceEnvironment, 'stg') }}:
+    - name: sourceHostUrl
+      value: "https://csds.staging.apps.hmcts.net"
+  - ${{ if eq(parameters.sourceEnvironment, 'prod') }}:
+    - name: sourceHostUrl
+      value: "https://csds.apps.hmcts.net"
+
+  # Target host URL
+  - ${{ if eq(parameters.targetEnvironment, 'sbox') }}:
+    - name: targetHostUrl
+      value: "https://csds.sandbox.apps.hmcts.net"
+  - ${{ if eq(parameters.targetEnvironment, 'dev') }}:
+    - name: targetHostUrl
+      value: "https://csds.dev.apps.hmcts.net"
+  - ${{ if eq(parameters.targetEnvironment, 'stg') }}:
+    - name: targetHostUrl
+      value: "https://csds.staging.apps.hmcts.net"
+  - ${{ if eq(parameters.targetEnvironment, 'prod') }}:
+    - name: targetHostUrl
+      value: "https://csds.apps.hmcts.net"
+
+  # Source service connection
+  - ${{ if eq(parameters.sourceEnvironment, 'sbox') }}:
+    - name: sourceServiceConnection
+      value: "DCD-CFTAPPS-SBOX"
+  - ${{ if eq(parameters.sourceEnvironment, 'dev') }}:
+    - name: sourceServiceConnection
+      value: "DCD-CFTAPPS-DEV"
+  - ${{ if eq(parameters.sourceEnvironment, 'stg') }}:
+    - name: sourceServiceConnection
+      value: "DCD-CFTAPPS-STG"
+  - ${{ if eq(parameters.sourceEnvironment, 'prod') }}:
+    - name: sourceServiceConnection
+      value: "DCD-CFTAPPS-PROD"
+
+  # Target service connection
+  - ${{ if eq(parameters.targetEnvironment, 'sbox') }}:
+    - name: targetServiceConnection
+      value: "DCD-CFTAPPS-SBOX"
+  - ${{ if eq(parameters.targetEnvironment, 'dev') }}:
+    - name: targetServiceConnection
+      value: "DCD-CFTAPPS-DEV"
+  - ${{ if eq(parameters.targetEnvironment, 'stg') }}:
+    - name: targetServiceConnection
+      value: "DCD-CFTAPPS-STG"
+  - ${{ if eq(parameters.targetEnvironment, 'prod') }}:
+    - name: targetServiceConnection
+      value: "DCD-CFTAPPS-PROD"
+
+stages:
+  - stage: DeployModel
+    displayName: "Deploy ${{ parameters.modelName }} from ${{ parameters.sourceEnvironment }} to ${{ parameters.targetEnvironment }}"
+    jobs:
+      - job: DeployModel
+        displayName: "Validate > Export > Import > Deploy"
+        pool: hmcts-sds-ptl
+        steps:
+          - checkout: self
+            clean: true
+
+          # -- Step 1: Validate parameters --
+          - bash: |
+              set -euo pipefail
+              SOURCE="${{ parameters.sourceEnvironment }}"
+              TARGET="${{ parameters.targetEnvironment }}"
+              if [ "$SOURCE" = "$TARGET" ]; then
+                echo "##vso[task.logissue type=error]Source and target environments must be different (both set to '${SOURCE}')."
+                exit 1
+              fi
+              echo "=========================================="
+              echo "  Semarchy Model Deployment"
+              echo "=========================================="
+              echo "  Model:         ${{ parameters.modelName }}"
+              echo "  Source:        ${SOURCE}"
+              echo "  Target:        ${TARGET}"
+              echo "  Close model:   ${{ parameters.closeModel }}"
+              echo "  Version:       ${{ coalesce(parameters.version, '(auto-detect)') }}"
+              echo "  Data location: ${{ parameters.dataLocationName }}"
+            displayName: "Validate Parameters"
+
+          # -- Step 2: Retrieve source API key from Azure Key Vault --
+          - task: AzureCLI@2
+            displayName: "Fetch Source API Key"
+            inputs:
+              azureSubscription: $(sourceServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                echo "=== Retrieving API Key from Key Vault 'csds-keyvault-${{ parameters.sourceEnvironment }}' ==="
+                API_KEY=$(az keyvault secret show \
+                  --name "csds-api-key" \
+                  --vault-name "csds-keyvault-${{ parameters.sourceEnvironment }}" \
+                  --query value -o tsv)
+                if [ -z "$API_KEY" ]; then
+                  echo "##vso[task.logissue type=error]Failed to retrieve source API key from 'csds-keyvault-${{ parameters.sourceEnvironment }}'."
+                  exit 1
+                fi
+                echo "##vso[task.setvariable variable=SOURCE_API_KEY;issecret=true]${API_KEY}"
+                echo "Source API key retrieved successfully."
+
+          # -- Step 3: Retrieve target API key from Azure Key Vault --
+          - task: AzureCLI@2
+            displayName: "Fetch Target API Key"
+            inputs:
+              azureSubscription: $(targetServiceConnection)
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -euo pipefail
+                echo "=== Retrieving API Key from Key Vault 'csds-keyvault-${{ parameters.targetEnvironment }}' ==="
+                API_KEY=$(az keyvault secret show \
+                  --name "csds-api-key" \
+                  --vault-name "csds-keyvault-${{ parameters.targetEnvironment }}" \
+                  --query value -o tsv)
+                if [ -z "$API_KEY" ]; then
+                  echo "##vso[task.logissue type=error]Failed to retrieve target API key from 'csds-keyvault-${{ parameters.targetEnvironment }}'."
+                  exit 1
+                fi
+                echo "##vso[task.setvariable variable=TARGET_API_KEY;issecret=true]${API_KEY}"
+                echo "Target API key retrieved successfully."
+
+          # -- Step 4: Identify the model edition to export --
+          - bash: |
+              set -euo pipefail
+
+              BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
+              VERSION="${{ parameters.version }}"
+              CLOSE="${{ parameters.closeModel }}"
+
+              if [ -n "$VERSION" ]; then
+                # Explicit version supplied - use it directly
+                EDITION_KEY="$VERSION"
+                echo "Using explicitly provided edition key: ${EDITION_KEY}"
+
+              elif [ "$CLOSE" = "True" ] || [ "$CLOSE" = "true" ]; then
+                # Close requested - work with the current OPEN edition
+                echo "Auto-detecting OPEN edition for model '${{ parameters.modelName }}'..."
+
+                TMPFILE=$(mktemp)
+                HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" \
+                  -X GET "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=OPEN" \
+                  -H "API-Key: ${SOURCE_API_KEY}")
+
+                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                  echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching OPEN editions."
+                  echo "Response body:"; cat "$TMPFILE"
+                  rm -f "$TMPFILE"; exit 1
+                fi
+
+                EDITION_KEY=$(cat "$TMPFILE" | python3 -c "
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'OPEN']
+                print(editions[0]['key'] if editions else '', end='')
+                ")
+                rm -f "$TMPFILE"
+
+              else
+                # No close - get the highest CLOSED edition
+                echo "Auto-detecting latest CLOSED edition for model '${{ parameters.modelName }}'..."
+
+                TMPFILE=$(mktemp)
+                HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" \
+                  -X GET "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=CLOSED" \
+                  -H "API-Key: ${SOURCE_API_KEY}")
+
+                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                  echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching CLOSED editions."
+                  echo "Response body:"; cat "$TMPFILE"
+                  rm -f "$TMPFILE"; exit 1
+                fi
+
+                EDITION_KEY=$(cat "$TMPFILE" | python3 -c "
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'CLOSED']
+                if not editions:
+                    print('', end='')
+                else:
+                    editions.sort(key=lambda e: tuple(int(p) for p in e['key'].split('.')), reverse=True)
+                    print(editions[0]['key'], end='')
+                ")
+                rm -f "$TMPFILE"
+              fi
+
+              if [ -z "$EDITION_KEY" ]; then
+                echo "##vso[task.logissue type=error]No model edition found for '${{ parameters.modelName }}'. Check the model name and source environment."
+                exit 1
+              fi
+
+              echo "Identified edition key: ${EDITION_KEY}"
+              echo "##vso[task.setvariable variable=EDITION_KEY]${EDITION_KEY}"
+            displayName: "Identify Model Edition"
+            env:
+              SOURCE_API_KEY: $(SOURCE_API_KEY)
+
+          # -- Step 5: Close the model edition (conditional - only when closeModel is true) --
+          - ${{ if eq(parameters.closeModel, true) }}:
+            - bash: |
+                set -euo pipefail
+
+                BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
+                EDITION_KEY="$(EDITION_KEY)"
+
+                echo "=== Closing model edition ${EDITION_KEY} on ${{ parameters.sourceEnvironment }} ==="
+
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                  -X POST "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/close" \
+                  -H "Content-Type: application/json" \
+                  -H "API-Key: ${SOURCE_API_KEY}" \
+                  --data "{\"description\": \"Closing edition ${EDITION_KEY} for deployment to ${{ parameters.targetEnvironment }}.\"}")
+
+                if [ "$HTTP_CODE" != "303" ]; then
+                  echo "##vso[task.logissue type=error]Close failed. Expected HTTP 303 but got ${HTTP_CODE}."
+                  exit 1
+                fi
+                echo "Close request returned HTTP 303 (success)."
+
+                # Verify: a new OPEN edition should now exist (confirming the close succeeded)
+                TMPFILE=$(mktemp)
+                curl -s -o "$TMPFILE" -X GET \
+                  "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=OPEN" \
+                  -H "API-Key: ${SOURCE_API_KEY}"
+
+                NEW_OPEN=$(cat "$TMPFILE" | python3 -c "
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'OPEN']
+                print(editions[0]['key'] if editions else '', end='')
+                " 2>/dev/null || echo "")
+                rm -f "$TMPFILE"
+
+                if [ -n "$NEW_OPEN" ]; then
+                  echo "Edition ${EDITION_KEY} closed successfully. New OPEN edition: ${NEW_OPEN}"
+                else
+                  echo "##vso[task.logissue type=warning]Could not verify new OPEN edition after close. The close may still have succeeded."
+                fi
+              displayName: "Close Model Edition"
+              env:
+                SOURCE_API_KEY: $(SOURCE_API_KEY)
+
+          # -- Step 6: Export the model edition as XML --
+          - bash: |
+              set -euo pipefail
+
+              BASE_URL="$(sourceHostUrl)/api/rest/app-builder"
+              EDITION_KEY="$(EDITION_KEY)"
+              TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+              EXPORT_FILE="${{ parameters.modelName }}_${EDITION_KEY}_${TIMESTAMP}.xml"
+              FILEPATH="$(Build.ArtifactStagingDirectory)/${EXPORT_FILE}"
+
+              echo "=== Exporting edition ${EDITION_KEY} from ${{ parameters.sourceEnvironment }} ==="
+
+              HTTP_CODE=$(curl -s -o "${FILEPATH}" -w "%{http_code}" \
+                -X GET "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/content" \
+                -H "API-Key: ${SOURCE_API_KEY}")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Export failed with HTTP ${HTTP_CODE}."
+                exit 1
+              fi
+
+              if [ ! -s "${FILEPATH}" ]; then
+                echo "##vso[task.logissue type=error]Exported file is empty or does not exist: ${EXPORT_FILE}"
+                exit 1
+              fi
+
+              FILE_SIZE=$(wc -c < "${FILEPATH}" | tr -d ' ')
+              echo "Export successful: ${EXPORT_FILE} (${FILE_SIZE} bytes)"
+
+              echo "##vso[task.setvariable variable=EXPORT_FILEPATH]${FILEPATH}"
+              echo "##vso[task.setvariable variable=TIMESTAMP]${TIMESTAMP}"
+            displayName: "Export Model Edition"
+            env:
+              SOURCE_API_KEY: $(SOURCE_API_KEY)
+
+          # -- Step 7: Publish the export as a pipeline artifact --
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Model Export Artifact"
+            inputs:
+              targetPath: "$(EXPORT_FILEPATH)"
+              artifactName: "semarchy-model-export-$(TIMESTAMP)"
+
+          # -- Step 8: Import model edition into target --
+          - bash: |
+              set -exuo pipefail
+
+              BASE_URL="$(targetHostUrl)/api/rest/app-builder"
+              EXPORT_FILE="$(EXPORT_FILEPATH)"
+
+              echo "=== Importing edition into ${{ parameters.targetEnvironment }} ==="
+
+              if [ ! -s "${EXPORT_FILE}" ]; then
+                echo "##vso[task.logissue type=error]Export file not found or empty: ${EXPORT_FILE}"
+                exit 1
+              fi
+
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                -X POST "${BASE_URL}/model-imports" \
+                -H "Content-Type: application/octet-stream" \
+                -H "API-Key: ${TARGET_API_KEY}" \
+                --data-binary @"${EXPORT_FILE}")
+
+              if [ "$HTTP_CODE" != "303" ]; then
+                echo "##vso[task.logissue type=error]Import failed. Expected HTTP 303 but got ${HTTP_CODE}."
+                exit 1
+              fi
+
+              echo "Import successful (HTTP 303). Model edition imported into ${{ parameters.targetEnvironment }}."
+            displayName: "Import Model Edition"
+            env:
+              TARGET_API_KEY: $(TARGET_API_KEY)
+
+          # -- Step 9: Deploy the model on the target data location --
+          - bash: |
+              set -exuo pipefail
+
+              BASE_URL="$(targetHostUrl)/api/rest/app-builder"
+              EDITION_KEY="$(EDITION_KEY)"
+
+              echo "=== Deploying ${{ parameters.modelName }} edition ${EDITION_KEY} to data location '${{ parameters.dataLocationName }}' on ${{ parameters.targetEnvironment }} ==="
+
+              TMPFILE=$(mktemp)
+              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" \
+                -X POST "${BASE_URL}/data-locations/${{ parameters.dataLocationName }}/deploy" \
+                -H "Content-Type: application/json" \
+                -H "API-Key: ${TARGET_API_KEY}" \
+                --data "{\"modelName\": \"${{ parameters.modelName }}\", \"modelEditionKey\": \"${EDITION_KEY}\"}")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "##vso[task.logissue type=error]Deployment failed with HTTP ${HTTP_CODE}."
+                echo "Response body:"; cat "$TMPFILE"
+                rm -f "$TMPFILE"; exit 1
+              fi
+
+              RESPONSE=$(cat "$TMPFILE")
+              rm -f "$TMPFILE"
+              echo "Deploy response: ${RESPONSE}"
+              echo ""
+              echo "=========================================="
+              echo "  Deployment complete!"
+              echo "  Model:         ${{ parameters.modelName }}"
+              echo "  Edition:       ${EDITION_KEY}"
+              echo "  Source:        ${{ parameters.sourceEnvironment }}"
+              echo "  Target:        ${{ parameters.targetEnvironment }}"
+              echo "  Data Location: ${{ parameters.dataLocationName }}"
+              echo "=========================================="
+            displayName: "Deploy Model Edition"
+            env:
+              TARGET_API_KEY: $(TARGET_API_KEY)
