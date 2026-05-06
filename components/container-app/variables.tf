@@ -3,12 +3,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "resource_group_location" {
-  description = "The Azure region where the Resource Group will be created"
-  type        = string
-  default     = "uksouth"
-}
-
 variable "env" {
   description = "The environment (e.g., dev, test, prod)"
   type        = string
