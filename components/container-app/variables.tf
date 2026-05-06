@@ -57,7 +57,7 @@ variable "pss_test_harness" {
     ingress_external_enabled                    = optional(bool, true)
     min_replicas                                = optional(number, 1)
     max_replicas                                = optional(number, 1)
-    environment_certificate_key_vault_secret_id = string
+    environment_certificate_key_vault_secret_id = optional(string)
   })
   description = "Object representing the configuration of the PSS Test Harness deployment, disabled by default."
   default     = {}
