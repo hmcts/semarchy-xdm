@@ -74,8 +74,8 @@ module "container_app" {
 
   common_tags = module.ctags.common_tags
 
-  existing_resource_group_name = data.azurerm_resource_group.core.name
-  location                     = data.azurerm_resource_group.core.location
+  existing_resource_group_name = var.resource_group_name
+  location                     = var.resource_group_location
 
   log_analytics_workspace_id = data.azurerm_log_analytics_workspace.main.id
   subnet_id                  = data.azurerm_subnet.container_apps.id
