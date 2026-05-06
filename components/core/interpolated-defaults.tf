@@ -102,7 +102,8 @@ locals {
         "SemarchyBaseURL"         = local.semarchy-urls[var.env]
         "SemarchyAPIKey"          = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
         "UrgentWaitPeriodSeconds" = 600
-        "PSSBaseURL"              = "https://this.needs.updating/api/rest"
+        "MockPSSBaseURL"          = "https://pss-test-harness.sandbox.platform.hmcts.net/soap"
+        "RealPSSBaseURL"          = "https://this.needs.updating/api/rest"
       }
     }
   }

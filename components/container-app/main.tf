@@ -26,6 +26,14 @@ locals {
       registry_server                    = "hmctsprod.azurecr.io"
       registry_identity_id               = azurerm_user_assigned_identity.acr_pull[0].id
 
+      custom_domain = {
+        fqdn                        = "pss-test-harness.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "pss-${var.env}-cert"
+        private_dns_zone            = local.private_dns_zone
+      }
+
       min_replicas = var.pss_test_harness.min_replicas
       max_replicas = var.pss_test_harness.max_replicas
     }
@@ -80,7 +88,13 @@ module "container_app" {
     }
   }
 
-  environment_certificates = {
+  environment_certificates = local.deploy_test_harness ? {
+    "csds-active-${var.env}-cert"       = var.active_environment_certificate_key_vault_secret_id
+    "csds-passive-${var.env}-cert"      = var.passive_environment_certificate_key_vault_secret_id
+    "csds-active-apps-${var.env}-cert"  = var.active_application_environment_certificate_key_vault_secret_id
+    "csds-passive-apps-${var.env}-cert" = var.passive_application_environment_certificate_key_vault_secret_id
+    "pss-${var.env}-cert"               = var.pss_test_harness.environment_certificate_key_vault_secret_id
+    } : {
     "csds-active-${var.env}-cert"       = var.active_environment_certificate_key_vault_secret_id
     "csds-passive-${var.env}-cert"      = var.passive_environment_certificate_key_vault_secret_id
     "csds-active-apps-${var.env}-cert"  = var.active_application_environment_certificate_key_vault_secret_id
