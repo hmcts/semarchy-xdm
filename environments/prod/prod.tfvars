@@ -26,5 +26,3 @@ passive_application_environment_certificate_key_vault_secret_id = "https://acmed
 admin_group = "DTS Crime Standing Data Service Admin (env:prod)"
 
 postgres_storage_mb = 131072
-
-static_ip_address = "10.24.236.10"

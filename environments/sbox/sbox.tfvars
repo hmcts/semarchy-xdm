@@ -56,5 +56,3 @@ pss_test_harness = {
   image                                       = "hmctsprod.azurecr.io/csds/pss-test-harness:feat-test-harness-deployment"
   environment_certificate_key_vault_secret_id = "https://acmedtscftsboxintsvc.vault.azure.net/secrets/pss-test-harness-sandbox-platform-hmcts-net"
 }
-
-static_ip_address = "10.25.236.87"
