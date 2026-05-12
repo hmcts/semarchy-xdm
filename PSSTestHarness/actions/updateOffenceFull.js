@@ -68,6 +68,19 @@ function createHandleUpdateOffenceFull() {
       writeJson(indexFile, index);
     }
 
+    // --- AUTO-GENERATED ID FIELDS FOR EVERY COMPONENT ---
+    const OH_ID  = randomId();
+
+    // 🔥 FIX: Make OFR_ID = OffenceID
+    const OFR_ID = offenceId;
+
+    const OW_ID  = randomId();
+    const OAS_ID = randomId();
+    const OSF_ID = randomId();
+    const RefOffenceId = randomId();
+    const POH_ID = randomId();
+    const POR_ID = randomId();
+
     // --- TERMINAL ENTRIES (array-safe) ---
     const terminalEntries = asArray(request.OffenceTerminalEntriesType).map(ent => ({
       OTE_ID: toInt(ent.OTE_ID, { fallbackToRandom: true }),
@@ -86,15 +99,63 @@ function createHandleUpdateOffenceFull() {
     const finalJson = {
       OffenceID: offenceId,
       CJSCode: cjsCode,
-      OffenceHeader: request.OffenceHeaderType,
-      OffenceRevisions: request.OffenceRevisionsType,
-      OffenceWordings: request.OffenceWordingsType,
-      ActAndSection: request.ActAndSectionType,
-      StatementOfFacts: request.StatementOfFactsType,
+
+      OffenceHeader: {
+        OH_ID,
+        ...request.OffenceHeaderType
+      },
+
+      OffenceRevisions: {
+        OFR_ID,   // <-- now same as OffenceID
+        ...request.OffenceRevisionsType
+      },
+
+      OffenceWordings: {
+        OW_ID,
+        ...request.OffenceWordingsType
+      },
+
+      ActAndSection: {
+        OAS_ID,
+        ...request.ActAndSectionType
+      },
+
+      StatementOfFacts: {
+        OSF_ID,
+        ...request.StatementOfFactsType
+      },
+
       TerminalEntries: terminalEntries,
-      CrownOffence: request.CrownOffenceType,
-      CppOffenceHeader: request.CppOffenceHeaderType,
-      CppOffenceRevisions: request.CppOffenceRevisionsType,
+
+      CrownOffence: {
+        RefOffenceId,
+        ...request.CrownOffenceType
+      },
+
+      CppOffenceHeader: {
+        POH_ID,
+        ...request.CppOffenceHeaderType
+      },
+
+      CppOffenceRevisions: {
+        POR_ID,
+        ...request.CppOffenceRevisionsType
+      },
+
+      ...(request.ApplicationDataType && {
+        ApplicationDataType: {
+          CAD_ID: randomId(),
+          ...request.ApplicationDataType
+        }
+      }),
+      
+      ...(request.CivilApplicationType && {
+        CivilApplicationType: {
+          CCA_ID: randomId(),
+          ...request.CivilApplicationType
+        }
+      }),
+
       AuditingInformation: {
         ChangedBy: audit.ChangedBy,
         ChangedDate: audit.ChangedDate

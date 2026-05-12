@@ -47,11 +47,15 @@ function createHandleCreateChangeSetHeader(store) {
 
     const status = normalize(headerType.Status) || "Draft";
     const parentRefType = normalize(headerType.ParentRefType);
+    const description = normalize(headerType.ChangeSetHeaderDescription);
 
     //
     // 🔥 3. Build composite index key
     //
-    const compositeKey = `${referenceType}::${parentRefType}`;
+    const compositeKey =
+    parentRefType === "FIXED LIST"
+        ? `${referenceType}::${description}`
+        : `${referenceType}::${parentRefType}`;
 
     //
     // 4. Load index and look up composite key

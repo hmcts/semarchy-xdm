@@ -307,6 +307,7 @@ function startServer(port) {
       "getOffenceMenuSummary",
       "getOffenceMenuFull",
       "updateChangeSetHeader",
+      "createChangeSetItems",
       "updateOffenceFull",
       "getOffenceSummary",
       "getOffenceFull",
