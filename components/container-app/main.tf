@@ -81,6 +81,7 @@ module "container_app" {
   subnet_id                  = data.azurerm_subnet.container_apps.id
 
   internal_load_balancer_enabled = true
+  static_ip_address              = var.static_ip_address
 
   workload_profiles = {
     "dedicated" = {
