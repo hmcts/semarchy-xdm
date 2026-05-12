@@ -147,9 +147,3 @@ variable "generate_setup_token" {
   type        = bool
   default     = false
 }
-
-variable "static_ip_address" {
-  description = "The static IP address to assign to the Container App's load balancer"
-  type        = string
-  default     = null
-}
