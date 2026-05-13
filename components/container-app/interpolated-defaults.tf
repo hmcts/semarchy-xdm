@@ -51,6 +51,7 @@ locals {
     "sbox" = "sandbox"
     "stg"  = "staging"
     "dev"  = "dev"
+    "ithc" = "ithc"
     "prod" = "prod"
   }
 
