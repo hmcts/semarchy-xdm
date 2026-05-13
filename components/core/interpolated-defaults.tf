@@ -113,6 +113,7 @@ locals {
     prod = "https://csds.apps.hmcts.net/api/rest"
     stg  = "https://csds.staging.apps.hmcts.net/api/rest"
     dev  = "https://csds.dev.apps.hmcts.net/api/rest"
+    ithc = "https://csds.ithc.apps.hmcts.net/api/rest"
     sbox = "https://csds.sandbox.apps.hmcts.net/api/rest"
   }
 }
