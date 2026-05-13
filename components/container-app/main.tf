@@ -43,8 +43,8 @@ locals {
 resource "azurerm_user_assigned_identity" "acr_pull" {
   count               = local.deploy_test_harness ? 1 : 0
   name                = "csds-${var.env}-acr-pull-uami"
-  location            = data.azurerm_resource_group.core.location
-  resource_group_name = data.azurerm_resource_group.core.name
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
   tags                = module.ctags.common_tags
 }
 
@@ -58,8 +58,6 @@ resource "azurerm_role_assignment" "acr_pull" {
 
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
-
-  depends_on = [azurerm_user_assigned_identity.acr_pull, azurerm_role_assignment.acr_pull]
 
   providers = {
     azurerm             = azurerm
