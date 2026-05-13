@@ -11,7 +11,8 @@ data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "current" {}
 
 locals {
-  private_dns_sub_id = "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
+  deploy_test_harness = var.pss_test_harness != null && var.pss_test_harness.enabled && var.pss_test_harness.image != ""
+  private_dns_sub_id  = "1baf5470-1c3e-40d3-a6f7-74bfbce4b348"
 
   private_dns_zone_names = [
     "privatelink.blob.core.windows.net",
@@ -102,7 +103,8 @@ locals {
         "SemarchyBaseURL"         = local.semarchy-urls[var.env]
         "SemarchyAPIKey"          = "@Microsoft.KeyVault(SecretUri=https://csds-keyvault-${var.env}.vault.azure.net/secrets/${var.functions_api_key_secret_slug})"
         "UrgentWaitPeriodSeconds" = 600
-        "PSSBaseURL"              = "https://this.needs.updating/api/rest"
+        "MockPSSBaseURL"          = "https://pss-test-harness.sandbox.platform.hmcts.net/soap"
+        "RealPSSBaseURL"          = "https://this.needs.updating/api/rest"
       }
     }
   }

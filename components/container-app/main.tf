@@ -26,6 +26,14 @@ locals {
       registry_server                    = "hmctsprod.azurecr.io"
       registry_identity_id               = azurerm_user_assigned_identity.acr_pull[0].id
 
+      custom_domain = {
+        fqdn                        = "pss-test-harness.${local.env_map[var.env]}.platform.hmcts.net"
+        zone_name                   = "${local.env_map[var.env]}.platform.hmcts.net"
+        zone_resource_group_name    = "reformMgmtRG"
+        environment_certificate_key = "pss-${var.env}-cert"
+        private_dns_zone            = local.private_dns_zone
+      }
+
       min_replicas = var.pss_test_harness.min_replicas
       max_replicas = var.pss_test_harness.max_replicas
     }
@@ -35,8 +43,8 @@ locals {
 resource "azurerm_user_assigned_identity" "acr_pull" {
   count               = local.deploy_test_harness ? 1 : 0
   name                = "csds-${var.env}-acr-pull-uami"
-  location            = data.azurerm_resource_group.core.location
-  resource_group_name = data.azurerm_resource_group.core.name
+  location            = var.resource_group_location
+  resource_group_name = var.resource_group_name
   tags                = module.ctags.common_tags
 }
 
@@ -51,8 +59,6 @@ resource "azurerm_role_assignment" "acr_pull" {
 module "container_app" {
   source = "github.com/hmcts/terraform-module-azure-container-app?ref=main"
 
-  depends_on = [azurerm_user_assigned_identity.acr_pull, azurerm_role_assignment.acr_pull]
-
   providers = {
     azurerm             = azurerm
     azurerm.dns         = azurerm.dns
@@ -66,8 +72,8 @@ module "container_app" {
 
   common_tags = module.ctags.common_tags
 
-  existing_resource_group_name = data.azurerm_resource_group.core.name
-  location                     = data.azurerm_resource_group.core.location
+  existing_resource_group_name = var.resource_group_name
+  location                     = var.resource_group_location
 
   log_analytics_workspace_id = data.azurerm_log_analytics_workspace.main.id
   subnet_id                  = data.azurerm_subnet.container_apps.id
@@ -80,7 +86,13 @@ module "container_app" {
     }
   }
 
-  environment_certificates = {
+  environment_certificates = local.deploy_test_harness ? {
+    "csds-active-${var.env}-cert"       = var.active_environment_certificate_key_vault_secret_id
+    "csds-passive-${var.env}-cert"      = var.passive_environment_certificate_key_vault_secret_id
+    "csds-active-apps-${var.env}-cert"  = var.active_application_environment_certificate_key_vault_secret_id
+    "csds-passive-apps-${var.env}-cert" = var.passive_application_environment_certificate_key_vault_secret_id
+    "pss-${var.env}-cert"               = var.pss_test_harness.environment_certificate_key_vault_secret_id
+    } : {
     "csds-active-${var.env}-cert"       = var.active_environment_certificate_key_vault_secret_id
     "csds-passive-${var.env}-cert"      = var.passive_environment_certificate_key_vault_secret_id
     "csds-active-apps-${var.env}-cert"  = var.active_application_environment_certificate_key_vault_secret_id

@@ -49,14 +49,15 @@ variable "passive_container_image" {
 
 variable "pss_test_harness" {
   type = object({
-    enabled                  = optional(bool, false)
-    image                    = optional(string, "hmctsprod.azurecr.io/csds/pss-test-harness:main")
-    cpu                      = optional(number, 0.5)
-    memory                   = optional(string, "1Gi")
-    target_port              = optional(number, 3000)
-    ingress_external_enabled = optional(bool, true)
-    min_replicas             = optional(number, 1)
-    max_replicas             = optional(number, 1)
+    enabled                                     = optional(bool, false)
+    image                                       = optional(string, "hmctsprod.azurecr.io/csds/pss-test-harness:main")
+    cpu                                         = optional(number, 0.5)
+    memory                                      = optional(string, "1Gi")
+    target_port                                 = optional(number, 3000)
+    ingress_external_enabled                    = optional(bool, true)
+    min_replicas                                = optional(number, 1)
+    max_replicas                                = optional(number, 1)
+    environment_certificate_key_vault_secret_id = optional(string)
   })
   description = "Object representing the configuration of the PSS Test Harness deployment, disabled by default."
   default     = {}

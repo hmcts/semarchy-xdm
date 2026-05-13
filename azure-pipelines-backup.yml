@@ -19,10 +19,12 @@ parameters:
     displayName: "Semarchy Host Name (e.g. semarchy.example.com)"
     default: "csds.dev.apps.hmcts.net"
 
-  - name: modelName
-    type: string
-    displayName: "Semarchy Model Name"
-    default: "CSDS"
+  - name: modelNames
+    type: object
+    displayName: "Semarchy Model Names"
+    default:
+      - CSDS
+      - MRD
 
   - name: modelEditionStatus
     type: string
@@ -88,195 +90,196 @@ variables:
       value: $(Build.SourcesDirectory)/semarchy-${{ parameters.targetRepository }}
 
 stages:
-  - stage: BackupModel
-    displayName: "Backup Semarchy Model"
+  - stage: BackupModels
+    displayName: "Backup Semarchy Models"
     jobs:
-      - job: ExportAndCommit
-        displayName: "Export Model & Commit to Git"
-        pool: hmcts-sds-ptl
-        steps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-          - ${{ if ne(parameters.targetRepository, 'self') }}:
-            - checkout: ${{ parameters.targetRepository }}
+      - ${{ each modelName in parameters.modelNames }}:
+        - job: ExportAndCommit_${{ modelName }}
+          displayName: "Export & Commit ${{ modelName }}"
+          pool: hmcts-sds-ptl
+          steps:
+            - checkout: self
               clean: true
               persistCredentials: true
-          # Step 0: Retrieve Semarchy API Key from Azure Key Vault
-          - task: AzureCLI@2
-            displayName: "Fetch API Key from Key Vault"
-            inputs:
-              azureSubscription: ${{ parameters.azureServiceConnection }}
-              scriptType: bash
-              scriptLocation: inlineScript
-              inlineScript: |
+            - ${{ if ne(parameters.targetRepository, 'self') }}:
+              - checkout: ${{ parameters.targetRepository }}
+                clean: true
+                persistCredentials: true
+            # Step 0: Retrieve Semarchy API Key from Azure Key Vault
+            - task: AzureCLI@2
+              displayName: "Fetch API Key from Key Vault"
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                scriptType: bash
+                scriptLocation: inlineScript
+                inlineScript: |
+                  set -euo pipefail
+                  echo "=== Retrieving API Key from Key Vault '${{ parameters.keyVaultName }}' ==="
+                  API_KEY=$(az keyvault secret show \
+                    --name "${{ parameters.keyVaultSecretName }}" \
+                    --vault-name "${{ parameters.keyVaultName }}" \
+                    --query value -o tsv)
+                  if [ -z "$API_KEY" ]; then
+                    echo "##vso[task.logissue type=error]Failed to retrieve secret '${{ parameters.keyVaultSecretName }}' from Key Vault '${{ parameters.keyVaultName }}'."
+                    exit 1
+                  fi
+                  echo "##vso[task.setvariable variable=SEMARCHY_API_KEY;issecret=true]${API_KEY}"
+                  echo "API Key retrieved successfully."
+
+            # Step 1: Identify the model edition to export
+            - bash: |
                 set -euo pipefail
-                echo "=== Retrieving API Key from Key Vault '${{ parameters.keyVaultName }}' ==="
-                API_KEY=$(az keyvault secret show \
-                  --name "${{ parameters.keyVaultSecretName }}" \
-                  --vault-name "${{ parameters.keyVaultName }}" \
-                  --query value -o tsv)
-                if [ -z "$API_KEY" ]; then
-                  echo "##vso[task.logissue type=error]Failed to retrieve secret '${{ parameters.keyVaultSecretName }}' from Key Vault '${{ parameters.keyVaultName }}'."
+
+                echo "=== Identifying ${{ parameters.modelEditionStatus }} Model Edition for ${{ modelName }} ==="
+
+                BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
+                STATUS="${{ parameters.modelEditionStatus }}"
+
+                echo "Checking API connectivity by fetching models list..."
+
+                TMPFILE=$(mktemp)
+                HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
+                  "${BASE_URL}/models" \
+                  -H "API-Key: $(SEMARCHY_API_KEY)")
+
+                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                  echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching models list."
+                  echo "Response body:"
+                  cat "$TMPFILE"
+                  rm -f "$TMPFILE"
                   exit 1
                 fi
-                echo "##vso[task.setvariable variable=SEMARCHY_API_KEY;issecret=true]${API_KEY}"
-                echo "API Key retrieved successfully."
 
-          # Step 1: Identify the model edition to export
-          - bash: |
-              set -euo pipefail
 
-              echo "=== Identifying ${{ parameters.modelEditionStatus }} Model Edition ==="
+                TMPFILE=$(mktemp)
+                HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
+                  "${BASE_URL}/models/${{ modelName }}/editions?status=${STATUS}" \
+                  -H "API-Key: $(SEMARCHY_API_KEY)")
 
-              BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
-              STATUS="${{ parameters.modelEditionStatus }}"
+                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                  echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching model editions."
+                  echo "Response body:"
+                  cat "$TMPFILE"
+                  rm -f "$TMPFILE"
+                  exit 1
+                fi
 
-              echo "Checking API connectivity by fetching models list..."
-
-              TMPFILE=$(mktemp)
-              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
-                "${BASE_URL}/models" \
-                -H "API-Key: $(SEMARCHY_API_KEY)")
-
-              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching models list."
-                echo "Response body:"
-                cat "$TMPFILE"
+                RESPONSE=$(cat "$TMPFILE")
                 rm -f "$TMPFILE"
-                exit 1
-              fi
 
+                if [ "$STATUS" = "OPEN" ]; then
+                  # Extract the single OPEN edition key
+                  EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'OPEN']
+                if not editions:
+                    print('', end='')
+                else:
+                    print(editions[0]['key'], end='')
+                ")
+                else
+                  # Extract the highest CLOSED edition key
+                  EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
+                import sys, json
+                data = json.load(sys.stdin)
+                editions = [e for e in data if e.get('status') == 'CLOSED']
+                if not editions:
+                    print('', end='')
+                else:
+                    def sort_key(e):
+                        parts = e['key'].split('.')
+                        return tuple(int(p) for p in parts)
+                    editions.sort(key=sort_key, reverse=True)
+                    print(editions[0]['key'], end='')
+                ")
+                fi
 
-              TMPFILE=$(mktemp)
-              HTTP_CODE=$(curl -s -o "$TMPFILE" -w "%{http_code}" -X GET \
-                "${BASE_URL}/models/${{ parameters.modelName }}/editions?status=${STATUS}" \
-                -H "API-Key: $(SEMARCHY_API_KEY)")
+                if [ -z "$EDITION_KEY" ]; then
+                  echo "##vso[task.logissue type=error]No ${STATUS} model edition found for model '${{ modelName }}'."
+                  exit 1
+                fi
 
-              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                echo "##vso[task.logissue type=error]Semarchy API returned HTTP ${HTTP_CODE} when fetching model editions."
-                echo "Response body:"
-                cat "$TMPFILE"
-                rm -f "$TMPFILE"
-                exit 1
-              fi
+                echo "Found edition key: ${EDITION_KEY}"
+                echo "##vso[task.setvariable variable=editionKey]${EDITION_KEY}"
+              displayName: "Get Model Edition (${{ modelName }})"
+              env:
+                SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
 
-              RESPONSE=$(cat "$TMPFILE")
-              rm -f "$TMPFILE"
+            # Step 2: Export the model edition as XML
+            - bash: |
+                set -euo pipefail
 
-              if [ "$STATUS" = "OPEN" ]; then
-                # Extract the single OPEN edition key
-                EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
-              import sys, json
-              data = json.load(sys.stdin)
-              editions = [e for e in data if e.get('status') == 'OPEN']
-              if not editions:
-                  print('', end='')
-              else:
-                  print(editions[0]['key'], end='')
-              ")
-              else
-                # Extract the highest CLOSED edition key
-                EDITION_KEY=$(echo "$RESPONSE" | python3 -c "
-              import sys, json
-              data = json.load(sys.stdin)
-              editions = [e for e in data if e.get('status') == 'CLOSED']
-              if not editions:
-                  print('', end='')
-              else:
-                  def sort_key(e):
-                      parts = e['key'].split('.')
-                      return tuple(int(p) for p in parts)
-                  editions.sort(key=sort_key, reverse=True)
-                  print(editions[0]['key'], end='')
-              ")
-              fi
+                EDITION_KEY=$(editionKey)
+                TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+                EXPORT_FILENAME="${{ modelName }}_${EDITION_KEY}_${TIMESTAMP}.xml"
 
-              if [ -z "$EDITION_KEY" ]; then
-                echo "##vso[task.logissue type=error]No ${STATUS} model edition found for model '${{ parameters.modelName }}'."
-                exit 1
-              fi
+                echo "=== Exporting Model Edition ${EDITION_KEY} for ${{ modelName }} ==="
 
-              echo "Found edition key: ${EDITION_KEY}"
-              echo "##vso[task.setvariable variable=editionKey]${EDITION_KEY}"
-            displayName: "Get Model Edition"
-            env:
-              SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
+                BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
 
-          # Step 2: Export the model edition as XML
-          - bash: |
-              set -euo pipefail
+                HTTP_CODE=$(curl -s -o "$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}" \
+                  -w "%{http_code}" \
+                  -X GET "${BASE_URL}/models/${{ modelName }}/editions/${EDITION_KEY}/content" \
+                  -H "API-Key: $(SEMARCHY_API_KEY)")
 
-              EDITION_KEY=$(editionKey)
-              TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
-              EXPORT_FILENAME="${{ parameters.modelName }}_${EDITION_KEY}_${TIMESTAMP}.xml"
+                if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                  echo "##vso[task.logissue type=error]Export failed with HTTP status ${HTTP_CODE}."
+                  exit 1
+                fi
 
-              echo "=== Exporting Model Edition ${EDITION_KEY} ==="
+                FILEPATH="$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}"
 
-              BASE_URL="https://${{ parameters.semarchyHostName }}/api/rest/app-builder"
+                if [ ! -s "$FILEPATH" ]; then
+                  echo "##vso[task.logissue type=error]Exported file is empty or does not exist: ${EXPORT_FILENAME}"
+                  exit 1
+                fi
 
-              HTTP_CODE=$(curl -s -o "$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}" \
-                -w "%{http_code}" \
-                -X GET "${BASE_URL}/models/${{ parameters.modelName }}/editions/${EDITION_KEY}/content" \
-                -H "API-Key: $(SEMARCHY_API_KEY)")
+                FILE_SIZE=$(wc -c < "$FILEPATH" | tr -d ' ')
+                echo "Export successful: ${EXPORT_FILENAME} (${FILE_SIZE} bytes)"
 
-              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                echo "##vso[task.logissue type=error]Export failed with HTTP status ${HTTP_CODE}."
-                exit 1
-              fi
+                echo "##vso[task.setvariable variable=exportFilename]${EXPORT_FILENAME}"
+                echo "##vso[task.setvariable variable=exportFilepath]${FILEPATH}"
+                echo "##vso[task.setvariable variable=timestamp]${TIMESTAMP}"
+              displayName: "Export Model Edition (${{ modelName }})"
+              env:
+                SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
 
-              FILEPATH="$(Build.ArtifactStagingDirectory)/${EXPORT_FILENAME}"
+            # Step 3: Publish the export as a pipeline artifact (for traceability)
+            - task: PublishPipelineArtifact@1
+              displayName: "Publish Backup Artifact (${{ modelName }})"
+              inputs:
+                targetPath: "$(exportFilepath)"
+                artifactName: "semarchy-model-backup-${{ modelName }}-$(timestamp)"
 
-              if [ ! -s "$FILEPATH" ]; then
-                echo "##vso[task.logissue type=error]Exported file is empty or does not exist: ${EXPORT_FILENAME}"
-                exit 1
-              fi
+            # Step 4: Commit and push the backup to the Git repository
+            - bash: |
+                set -euo pipefail
 
-              FILE_SIZE=$(wc -c < "$FILEPATH" | tr -d ' ')
-              echo "Export successful: ${EXPORT_FILENAME} (${FILE_SIZE} bytes)"
+                echo "=== Committing Backup to Git ==="
 
-              echo "##vso[task.setvariable variable=exportFilename]${EXPORT_FILENAME}"
-              echo "##vso[task.setvariable variable=exportFilepath]${FILEPATH}"
-              echo "##vso[task.setvariable variable=timestamp]${TIMESTAMP}"
-            displayName: "Export Model Edition"
-            env:
-              SEMARCHY_API_KEY: $(SEMARCHY_API_KEY)
+                BACKUP_DIR="${{ parameters.backupDirectory }}"
+                EXPORT_FILENAME="$(exportFilename)"
+                BRANCH="${{ parameters.targetBranch }}"
 
-          # Step 3: Publish the export as a pipeline artifact (for traceability)
-          - task: PublishPipelineArtifact@1
-            displayName: "Publish Backup Artifact"
-            inputs:
-              targetPath: "$(exportFilepath)"
-              artifactName: "semarchy-model-backup-$(timestamp)"
+                cd "$(checkoutDir)"
 
-          # Step 4: Commit and push the backup to the Git repository
-          - bash: |
-              set -euo pipefail
+                git config user.email "github-platform-operations@HMCTS.NET"
+                git config user.name "hmcts-platform-operations"
 
-              echo "=== Committing Backup to Git ==="
+                git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
+                git pull origin "${BRANCH}" --rebase || true
 
-              BACKUP_DIR="${{ parameters.backupDirectory }}"
-              EXPORT_FILENAME="$(exportFilename)"
-              BRANCH="${{ parameters.targetBranch }}"
+                mkdir -p "${BACKUP_DIR}"
+                cp "$(exportFilepath)" "${BACKUP_DIR}/${EXPORT_FILENAME}"
 
-              cd "$(checkoutDir)"
+                git add "${BACKUP_DIR}/${EXPORT_FILENAME}"
 
-              git config user.email "github-platform-operations@HMCTS.NET"
-              git config user.name "hmcts-platform-operations"
-
-              git checkout "${BRANCH}" || git checkout -b "${BRANCH}"
-              git pull origin "${BRANCH}" --rebase || true
-
-              mkdir -p "${BACKUP_DIR}"
-              cp "$(exportFilepath)" "${BACKUP_DIR}/${EXPORT_FILENAME}"
-
-              git add "${BACKUP_DIR}/${EXPORT_FILENAME}"
-
-              if git diff --cached --quiet; then
-                echo "No changes to commit (identical backup already exists). Skipping."
-              else
-                git commit -m "Semarchy model backup: ${{ parameters.modelName }} edition $(editionKey) at $(timestamp)"
-                git push origin "${BRANCH}"
-                echo "Backup committed and pushed successfully."
-              fi
-            displayName: "Commit Backup to Git"
+                if git diff --cached --quiet; then
+                  echo "No changes to commit (identical backup already exists). Skipping."
+                else
+                  git commit -m "Semarchy model backup: ${{ modelName }} edition $(editionKey) at $(timestamp)"
+                  git push origin "${BRANCH}"
+                  echo "Backup committed and pushed successfully."
+                fi
+              displayName: "Commit Backup to Git (${{ modelName }})"

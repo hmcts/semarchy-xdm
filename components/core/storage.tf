@@ -65,3 +65,10 @@ resource "azurerm_storage_share_file" "server-xml" {
   content_type      = "text/xml"
   content_md5       = filemd5("server.xml")
 }
+
+resource "azurerm_storage_share" "pss" {
+  count              = local.deploy_test_harness ? 1 : 0
+  name               = "csds-pss-${var.env}"
+  storage_account_id = module.storage.storageaccount_id
+  quota              = "512"
+}
