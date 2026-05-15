@@ -16,9 +16,8 @@ locals {
             }
           ]
           volume_mounts = {
-              semarchyconf = {
-                path     = "/usr/local/tomcat/conf/server.xml"
-                sub_path = "server.xml"
+              pss = {
+                path     = "/app/persisted_keys"
               }
             }
         }
