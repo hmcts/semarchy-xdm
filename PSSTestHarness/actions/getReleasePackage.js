@@ -47,7 +47,7 @@ function createHandleGetReleasePackage(store) {
     const random = Math.floor(Math.random() * 3) + 1; // 1–5
     
     if (random === 3) {
-      entry.Status = "Published";
+      entry.Status = "Closed";
     }
 
     // Save updated entry back into store

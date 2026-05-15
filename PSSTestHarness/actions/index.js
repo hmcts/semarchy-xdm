@@ -11,6 +11,9 @@ const { createHandleGetReleasePackage } = require("./getReleasePackage");
 const { createHandleCreateChangeSetHeader } = require("./createChangeSetHeader");
 const { createHandleUpdateChangeSetHeader } = require("./updateChangeSetHeader");
 
+// ChangeSetItems Handler
+const { createHandleCreateChangeSetItems } = require("./createChangeSetItems");
+
 // Offence Menu + Offence Handlers
 const { createHandleUpdateOffenceMenuFull } = require("./updateOffenceMenuFull");
 const { createHandleGetOffenceMenuSummary } = require("./getOffenceMenuSummary");
@@ -68,6 +71,10 @@ const handleCreateChangeSetHeader =
 const handleUpdateChangeSetHeader =
   createHandleUpdateChangeSetHeader(changeSetHeaderStore);
 
+// ChangeSetItems
+const handleCreateChangeSetItems =
+  createHandleCreateChangeSetItems();
+
 // Offence Menu
 const handleUpdateOffenceMenuFull =
   createHandleUpdateOffenceMenuFull();
@@ -82,8 +89,11 @@ const handleGetOffenceMenuFull =
 const handleUpdateOffenceFull =
   createHandleUpdateOffenceFull();
 
-const handleGetOffenceSummary = createHandleGetOffenceSummary();
-const handleGetOffenceFull = createHandleGetOffenceFull();
+const handleGetOffenceSummary =
+  createHandleGetOffenceSummary();
+
+const handleGetOffenceFull =
+  createHandleGetOffenceFull();
 
 
 // ---------------------------
@@ -99,6 +109,9 @@ module.exports = new Map([
   // ChangeSetHeader
   ["createChangeSetHeader", handleCreateChangeSetHeader],
   ["updateChangeSetHeader", handleUpdateChangeSetHeader],
+
+  // ChangeSetItems
+  ["createChangeSetItems", handleCreateChangeSetItems],
 
   // Offence Menu
   ["updateOffenceMenuFull", handleUpdateOffenceMenuFull],
