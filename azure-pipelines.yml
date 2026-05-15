@@ -201,16 +201,8 @@ stages:
             steps:
               - ${{ if eq(deployment.component, 'container-app') }}:
                 - script: |
-                    if [ "$(Build.Reason)" = "PullRequest" ]; then
-                      BRANCH_NAME="$(System.PullRequest.SourceBranch)"
-                    else
-                      BRANCH_NAME="$(Build.SourceBranch)"
-                    fi
-                    BRANCH_NAME="${BRANCH_NAME#refs/heads/}"
-                    BRANCH_NAME="${BRANCH_NAME//\//-}"
-                    IMAGE_TAG="${BRANCH_NAME}-$(Build.BuildId)"
-                    echo "##vso[task.setvariable variable=TF_VAR_pss_test_harness_image_tag]$IMAGE_TAG"
-                    echo "PSS Test Harness image tag set to: $IMAGE_TAG"
+                    echo "##vso[task.setvariable variable=TF_VAR_pss_test_harness_image_tag]$(Build.BuildId)"
+                    echo "PSS Test Harness image tag set to: $(Build.BuildId)"
                   displayName: 'Set PSS Test Harness image tag from build'
               - template: steps/terraform.yaml@cnp-azuredevops-libraries
                 parameters:
