@@ -16,10 +16,10 @@ locals {
             }
           ]
           volume_mounts = {
-              pss = {
-                path     = "/app/persisted_keys"
-              }
+            pss = {
+              path = "/app/persisted_keys"
             }
+          }
         }
       }
 
@@ -117,11 +117,12 @@ module "container_app" {
       share_name   = "csds-container-${var.env}"
       access_key   = data.azurerm_storage_account.csds.primary_access_key
     }
-  }, local.deploy_test_harness ? {
+    }, local.deploy_test_harness ? {
     pss = {
       account_name = data.azurerm_storage_account.csds.name
       share_name   = "csds-pss-${var.env}"
       access_key   = data.azurerm_storage_account.csds.primary_access_key
+      access_mode  = "ReadWrite"
     }
   } : {})
 
