@@ -1,12 +1,13 @@
 locals {
-  deploy_test_harness = var.pss_test_harness != null && var.pss_test_harness.enabled && var.pss_test_harness.image != ""
+  pss_test_harness_image = var.pss_test_harness_image_tag != "" ? "hmctsprod.azurecr.io/csds/pss-test-harness:${var.pss_test_harness_image_tag}" : var.pss_test_harness.image
+  deploy_test_harness    = var.pss_test_harness != null && var.pss_test_harness.enabled && local.pss_test_harness_image != ""
 
   test_harness_container_app = local.deploy_test_harness ? {
     "pss" = {
       workload_profile_name = "Consumption"
       containers = {
         "${var.component}-test-harness" = {
-          image  = var.pss_test_harness.image
+          image  = local.pss_test_harness_image
           cpu    = var.pss_test_harness.cpu
           memory = var.pss_test_harness.memory
           env = [

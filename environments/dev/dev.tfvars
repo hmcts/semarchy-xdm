@@ -53,6 +53,5 @@ postgres_storage_mb = 131072
 
 pss_test_harness = {
   enabled                                     = true
-  image                                       = "hmctsprod.azurecr.io/csds/pss-test-harness:main"
   environment_certificate_key_vault_secret_id = "https://acmedtscftptlintsvc.vault.azure.net/secrets/pss-test-harness-dev-platform-hmcts-net"
 }

@@ -142,6 +142,12 @@ variable "passive_application_environment_certificate_key_vault_secret_id" {
   type        = string
 }
 
+variable "pss_test_harness_image_tag" {
+  description = "Override tag for the PSS Test Harness container image. When set, this takes precedence over the tag in pss_test_harness.image. Automatically populated by the CI pipeline with the latest build tag; set in tfvars to pin an environment to a specific version."
+  type        = string
+  default     = ""
+}
+
 variable "generate_setup_token" {
   description = "Whether to generate a setup token for Semarchy XDM"
   type        = bool
