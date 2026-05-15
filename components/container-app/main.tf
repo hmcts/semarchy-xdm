@@ -15,6 +15,12 @@ locals {
               value = tostring(var.pss_test_harness.target_port)
             }
           ]
+          volume_mounts = {
+              semarchyconf = {
+                path     = "/usr/local/tomcat/conf/server.xml"
+                sub_path = "server.xml"
+              }
+            }
         }
       }
 
@@ -36,6 +42,13 @@ locals {
 
       min_replicas = var.pss_test_harness.min_replicas
       max_replicas = var.pss_test_harness.max_replicas
+
+      volumes = {
+        pss = {
+          storage_name = "pss"
+          storage_type = "AzureFile"
+        }
+      }
     }
   } : {}
 }
@@ -99,13 +112,19 @@ module "container_app" {
     "csds-passive-apps-${var.env}-cert" = var.passive_application_environment_certificate_key_vault_secret_id
   }
 
-  environment_storage = {
+  environment_storage = merge({
     semarchyconf = {
       account_name = data.azurerm_storage_account.csds.name
       share_name   = "csds-container-${var.env}"
       access_key   = data.azurerm_storage_account.csds.primary_access_key
     }
-  }
+  }, local.deploy_test_harness ? {
+    pss = {
+      account_name = data.azurerm_storage_account.csds.name
+      share_name   = "csds-pss-${var.env}"
+      access_key   = data.azurerm_storage_account.csds.primary_access_key
+    }
+  } : {})
 
   container_apps = merge(
     {
